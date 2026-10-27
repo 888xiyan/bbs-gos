@@ -1,10 +1,11 @@
-import { useLocation, useSearchParams } from "react-router"
+import { Navigate, useLocation, useSearchParams } from "react-router"
 
 import { useAppState } from "@/components/app/app-provider"
 import { SigninForm } from "@/components/auth/signin-form"
 import { useI18n } from "@/lib/i18n/provider"
 import { noindexRouteMeta } from "@/lib/seo"
 import { useDocumentTitle } from "@/lib/use-document-title"
+import { safeRedirect } from "@/lib/site"
 
 export function meta({
   matches,
@@ -25,11 +26,15 @@ export default function SigninRoute() {
     "authError" in location.state
       ? String(location.state.authError || "")
       : ""
-  const { config } = useAppState()
+  const { config, currentUser } = useAppState()
+  const redirectTo = safeRedirect(searchParams.get("redirect") || "/", "/")
+  if (currentUser) {
+    return <Navigate to={redirectTo} replace />
+  }
   return (
     <section className="main">
       {authError ? (
-        <div className="fixed top-4 left-1/2 z-50 -translate-x-1/2 rounded-md bg-destructive px-3 py-2 text-sm text-destructive-foreground shadow">
+        <div className="text-destructive-foreground fixed top-4 left-1/2 z-50 -translate-x-1/2 rounded-md bg-destructive px-3 py-2 text-sm shadow">
           {authError}
         </div>
       ) : null}

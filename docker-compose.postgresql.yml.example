@@ -21,7 +21,7 @@ services:
   bbs-go:
     # build:
     #   context: .
-    #   dockerfile: Dockerfile
+    #   dockerfile: Dockerfile.example
     image: mlogclub/bbs-go:${BBSGO_IMAGE_TAG:-latest}
     restart: unless-stopped
     depends_on:

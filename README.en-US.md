@@ -27,14 +27,14 @@ bbs-go provides an official Docker image and Docker Compose deployments with bui
 MySQL:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mlogclub/bbs-go/master/docker-compose.yml -o docker-compose.yml
+curl -fsSL https://raw.githubusercontent.com/mlogclub/bbs-go/master/docker-compose.yml.example -o docker-compose.yml
 docker compose up -d
 ```
 
 PostgreSQL:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mlogclub/bbs-go/master/docker-compose.postgresql.yml -o docker-compose.yml
+curl -fsSL https://raw.githubusercontent.com/mlogclub/bbs-go/master/docker-compose.postgresql.yml.example -o docker-compose.yml
 docker compose up -d
 ```
 

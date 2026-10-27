@@ -48,6 +48,19 @@ ip2region.xdb
 bbs-go.db
 bbs-go.db*
 
+# Docker build and deployment files
+Dockerfile*
+.dockerignore*
+docker/*
+docker-compose*.yml
+docker-compose*.yaml
+docker-data*/
+!Dockerfile.example
+!.dockerignore.example
+!docker/*.example
+!docker-compose*.example.yml
+!docker-compose*.example.yaml
+
 __debug_bin*
 
 # ===== 本 fork 私有内容（勿提交） =====

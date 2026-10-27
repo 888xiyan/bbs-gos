@@ -1,13 +1,7 @@
 "use client"
 
 import * as React from "react"
-import {
-  ArrowLeft,
-  ArrowUpRight,
-  Home,
-  RefreshCw,
-  Search,
-} from "lucide-react"
+import { ArrowLeft, ArrowUpRight, Home, RefreshCw, Search } from "lucide-react"
 import { useNavigate } from "react-router"
 
 import Link from "@/components/common/link"
@@ -15,6 +9,7 @@ import { WidgetCard } from "@/components/common/widget-card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useI18n } from "@/lib/i18n/provider"
+import { buildSigninHref } from "@/lib/toast"
 
 export function ErrorPage({
   message,
@@ -29,25 +24,31 @@ export function ErrorPage({
   const isNotFound = statusCode === 404
   const isForbidden = statusCode === 403
 
+  React.useEffect(() => {
+    if (statusCode === 401 || statusCode === 403 || statusCode === 404) {
+      navigate(buildSigninHref("/"), { replace: true })
+    }
+  }, [navigate, statusCode])
+
   const statusText =
     statusCode === 404
       ? t("pages.error.notFound")
       : statusCode === 403
         ? t("pages.error.forbidden")
-      : t("pages.error.unknown")
+        : t("pages.error.unknown")
   const titleText =
     statusCode === 404
       ? t("pages.error.title404")
       : statusCode === 403
         ? t("pages.error.title403")
-      : t("pages.error.title500")
+        : t("pages.error.title500")
   const descriptionText =
     message ||
     (statusCode === 404
       ? t("pages.error.desc404")
       : statusCode === 403
         ? t("pages.error.desc403")
-      : t("pages.error.desc500"))
+        : t("pages.error.desc500"))
   const quickLinks = [
     { to: "/", label: t("pages.error.quickHome") },
     { to: "/topics", label: t("pages.error.quickTopics") },
@@ -90,7 +91,9 @@ export function ErrorPage({
                       placeholder={t("pages.error.searchPlaceholder")}
                       className="h-auto border-none bg-transparent px-0 shadow-none focus-visible:ring-0"
                       autoComplete="off"
-                      onChange={(event) => setSearchKeyword(event.currentTarget.value)}
+                      onChange={(event) =>
+                        setSearchKeyword(event.currentTarget.value)
+                      }
                     />
                   </div>
                   <Button type="submit" className="h-10 sm:min-w-24">

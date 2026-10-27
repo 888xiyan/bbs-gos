@@ -1,10 +1,12 @@
-import { useSearchParams } from "react-router"
+import { Navigate, useSearchParams } from "react-router"
 
 import { SignupForm } from "@/components/auth/signup-form"
 import { WidgetCard } from "@/components/common/widget-card"
 import { useI18n } from "@/lib/i18n/provider"
 import { noindexRouteMeta } from "@/lib/seo"
 import { useDocumentTitle } from "@/lib/use-document-title"
+import { useAppState } from "@/components/app/app-provider"
+import { safeRedirect } from "@/lib/site"
 
 export function meta({
   matches,
@@ -17,7 +19,16 @@ export function meta({
 export default function SignupRoute() {
   const [searchParams] = useSearchParams()
   const { t } = useI18n()
+  const { currentUser } = useAppState()
   useDocumentTitle(t("user.signup.title"))
+  if (currentUser) {
+    return (
+      <Navigate
+        to={safeRedirect(searchParams.get("redirect") || "/", "/")}
+        replace
+      />
+    )
+  }
   return (
     <section className="main">
       <div className="container mx-auto">

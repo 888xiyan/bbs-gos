@@ -15,6 +15,10 @@ export type TopicListRouteData = {
 const qaStatusOptions = ["", "unsolved", "solved"]
 const sortOptions = ["latestPublish", "latestReply"]
 
+function invalidPathRedirect(): never {
+  throw redirect("/user/signin?redirect=/")
+}
+
 export function resolveCategoryId(id?: string) {
   if (id === "newest") return 0
   if (id === "recommend") return -1
@@ -132,6 +136,9 @@ export async function loadCategoryRouteData({
     loadCategories(request),
     loadCategory(request, categoryId),
   ])
+  if (categoryId > 0 && !category) {
+    invalidPathRedirect()
+  }
   return { topics, categories, category }
 }
 
@@ -147,6 +154,9 @@ export async function loadTopicTagRouteData({
     loadCategories(request),
     loadTag(request, id),
   ])
+  if (id && !tag) {
+    invalidPathRedirect()
+  }
   return { topics, categories, tag }
 }
 
@@ -207,8 +217,13 @@ export async function loadArticleListRouteData(params: {
 }): Promise<ArticleListRouteData> {
   const [articles, tag] = await Promise.all([
     loadArticles(params),
-    params.tagId ? loadTag(params.request, params.tagId) : Promise.resolve(null),
+    params.tagId
+      ? loadTag(params.request, params.tagId)
+      : Promise.resolve(null),
   ])
+  if (params.tagId && !tag) {
+    invalidPathRedirect()
+  }
   return Object.assign(articles, { tag })
 }
 
@@ -216,16 +231,24 @@ export async function loadTopicDetail(params: {
   request?: Request
   id: string | number
 }) {
-  return apiFetch<Topic>(`/api/topic/${params.id}`, {
-    request: params.request,
-  })
+  try {
+    return await apiFetch<Topic>(`/api/topic/${params.id}`, {
+      request: params.request,
+    })
+  } catch {
+    return invalidPathRedirect()
+  }
 }
 
 export async function loadArticleDetail(params: {
   request?: Request
   id: string | number
 }) {
-  return apiFetch<Article>(`/api/article/${params.id}`, {
-    request: params.request,
-  })
+  try {
+    return await apiFetch<Article>(`/api/article/${params.id}`, {
+      request: params.request,
+    })
+  } catch {
+    return invalidPathRedirect()
+  }
 }

@@ -25,14 +25,14 @@ bbs-go 提供官方 Docker 镜像，并提供内置 MySQL 或 PostgreSQL 的 Doc
 MySQL：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mlogclub/bbs-go/master/docker-compose.yml -o docker-compose.yml
+curl -fsSL https://raw.githubusercontent.com/mlogclub/bbs-go/master/docker-compose.yml.example -o docker-compose.yml
 docker compose up -d
 ```
 
 PostgreSQL：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mlogclub/bbs-go/master/docker-compose.postgresql.yml -o docker-compose.yml
+curl -fsSL https://raw.githubusercontent.com/mlogclub/bbs-go/master/docker-compose.postgresql.yml.example -o docker-compose.yml
 docker compose up -d
 ```
 
@@ -51,7 +51,7 @@ docker compose up -d
 | 环节 | 说明 |
 |------|------|
 | 触发时机 | 推送代码到 `master` 分支或推送 `v*` 版本 tag 时触发构建 |
-| 构建位置 | GitHub Actions 云端（ubuntu-latest，复用根目录 `Dockerfile` 多阶段构建） |
+| 构建位置 | GitHub Actions 云端（ubuntu-latest，复用根目录 `Dockerfile.example` 多阶段构建） |
 | 产物去向 | 同时推送至 GHCR 和 Docker Hub；版本 tag `v4.4.5` 会生成 `v4.4.5`、`4.4.5` 和 `latest` |
 | 服务器部署 | 不构建，直接 `docker compose pull && up` 拉取镜像 |
 

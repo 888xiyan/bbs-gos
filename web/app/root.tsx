@@ -12,6 +12,7 @@ import {
 } from "react-router"
 
 import { AppProvider, useAppConfig } from "@/components/app/app-provider"
+import { AuthRouteGuard } from "@/components/auth/auth-route-guard"
 import { ErrorPage } from "@/components/common/error-page"
 import {
   InstallRequiredFallback,
@@ -219,7 +220,9 @@ export default function Root() {
             <RuntimeScriptInjections />
             <GoogleOneTapGate />
             <LayoutChrome>
-              <Outlet />
+              <AuthRouteGuard>
+                <Outlet />
+              </AuthRouteGuard>
             </LayoutChrome>
             <Toaster position="top-center" />
           </TooltipProvider>

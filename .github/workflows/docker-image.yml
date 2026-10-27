@@ -82,6 +82,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
+          file: Dockerfile.example
           target: app
           platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
