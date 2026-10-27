@@ -54,6 +54,9 @@ export const PERMISSIONS = {
   DASHBOARD_SETTING_UPDATE: "dashboard.setting.update",
   DASHBOARD_SEARCH_REINDEX: "dashboard.search.reindex",
   DASHBOARD_SITEMAP_GENERATE: "dashboard.sitemap.generate",
+  INVITE_CODE_VIEW: "invite_code.view",
+  INVITE_CODE_CREATE: "invite_code.create",
+  INVITE_CODE_DISABLE: "invite_code.disable",
   DASHBOARD_EMAIL_LOG_VIEW: "dashboard.emailLog.view",
   DASHBOARD_USER_TASK_LOG_VIEW: "dashboard.userTaskLog.view",
   DASHBOARD_USER_EXP_LOG_VIEW: "dashboard.userExpLog.view",
@@ -63,8 +66,7 @@ export const PERMISSIONS = {
   DASHBOARD_OPERATE_LOG_VIEW: "dashboard.operateLog.view",
 } as const
 
-export type PermissionCode =
-  (typeof PERMISSIONS)[keyof typeof PERMISSIONS]
+export type PermissionCode = (typeof PERMISSIONS)[keyof typeof PERMISSIONS]
 
 export const PERMISSION_LIST = [
   PERMISSIONS.DASHBOARD_VIEW,
@@ -120,6 +122,9 @@ export const PERMISSION_LIST = [
   PERMISSIONS.DASHBOARD_SETTING_UPDATE,
   PERMISSIONS.DASHBOARD_SEARCH_REINDEX,
   PERMISSIONS.DASHBOARD_SITEMAP_GENERATE,
+  PERMISSIONS.INVITE_CODE_VIEW,
+  PERMISSIONS.INVITE_CODE_CREATE,
+  PERMISSIONS.INVITE_CODE_DISABLE,
   PERMISSIONS.DASHBOARD_EMAIL_LOG_VIEW,
   PERMISSIONS.DASHBOARD_USER_TASK_LOG_VIEW,
   PERMISSIONS.DASHBOARD_USER_EXP_LOG_VIEW,

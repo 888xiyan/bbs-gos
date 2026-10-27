@@ -34,6 +34,7 @@ export function DashboardDataFilterControl({
         />
       ) : (
         <Input
+          type={filter.type === "date" ? "date" : "text"}
           value={value === undefined || value === null ? "" : String(value)}
           placeholder={filter.label}
           onChange={(event) => onChange(event.target.value)}
@@ -42,4 +43,3 @@ export function DashboardDataFilterControl({
     </div>
   )
 }
-

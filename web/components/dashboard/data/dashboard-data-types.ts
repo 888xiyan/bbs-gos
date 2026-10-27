@@ -19,7 +19,7 @@ export type DashboardDataOptionSource = {
 export type DashboardDataFilter = DashboardDataOptionSource & {
   name: string
   label: string
-  type?: "text" | "select"
+  type?: "text" | "select" | "date"
   options?: DashboardDataOption[]
 }
 
@@ -43,6 +43,7 @@ export type DashboardDataFormField = DashboardDataOptionSource & {
   min?: number
   max?: number
   step?: number
+  defaultValue?: AdminFormValue
   valueFromRecord?: (record: AdminRecord) => AdminFormValue
 }
 

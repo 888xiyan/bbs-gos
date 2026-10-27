@@ -362,6 +362,12 @@ func registerAdminRoutes(group *gin.RouterGroup) {
 	linkGroup.POST("/update_sort", adminHandlers.LinkUpdateSort)
 	linkGroup.GET("/:id", adminHandlers.LinkDetail)
 
+	inviteCodeGroup := group.Group("/invite-code")
+	inviteCodeGroup.POST("/list", adminHandlers.InviteCodeList)
+	inviteCodeGroup.POST("/create", adminHandlers.InviteCodeCreate)
+	inviteCodeGroup.POST("/disable", adminHandlers.InviteCodeDisable)
+	inviteCodeGroup.GET("/:id", adminHandlers.InviteCodeDetail)
+
 	userScoreLogGroup := group.Group("/user-score-log")
 	userScoreLogGroup.POST("/list", adminHandlers.UserScoreLogList)
 	userScoreLogGroup.GET("/:id", adminHandlers.UserScoreLogDetail)

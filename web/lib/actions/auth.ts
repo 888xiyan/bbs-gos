@@ -140,6 +140,7 @@ export async function signupAction(
         email: formString(formData, "email"),
         password: formString(formData, "password"),
         rePassword: formString(formData, "rePassword"),
+        inviteCode: optionalFormString(formData, "inviteCode"),
         redirect: optionalFormString(formData, "redirect"),
         captchaId: optionalFormString(formData, "captchaId"),
         captchaCode: optionalFormString(formData, "captchaCode"),

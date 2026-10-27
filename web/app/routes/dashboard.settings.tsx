@@ -637,6 +637,7 @@ export default function DashboardSettingsRoute() {
                   topicPending: settings.topicPending,
                   userObserveSeconds: settings.userObserveSeconds,
                   antiAbuseConfig: settings.antiAbuseConfig,
+                  inviteCodeConfig: settings.inviteCodeConfig,
                 })
               }
             />
@@ -1580,6 +1581,7 @@ function SpamSettings({ settings, saving, s, update, onSave }: SettingsProps) {
   const antiAbuse = getObject(settings.antiAbuseConfig)
   const userRateLimit = getObject(antiAbuse.user)
   const ipRateLimit = getObject(antiAbuse.ip)
+  const inviteCodeConfig = getObject(settings.inviteCodeConfig)
 
   return (
     <SettingsForm
@@ -1612,6 +1614,56 @@ function SpamSettings({ settings, saving, s, update, onSave }: SettingsProps) {
           onChange={(value) => update("userObserveSeconds", value)}
         />
       </Field>
+      <SectionTitle>{s("spam.inviteCodeTitle")}</SectionTitle>
+      <Field label={s("spam.inviteCodeEnabled")}>
+        <SwitchWithTooltip
+          checked={Boolean(inviteCodeConfig.enabled)}
+          tooltip={s("spam.inviteCodeEnabledTooltip")}
+          onChange={(checked) => update("inviteCodeConfig.enabled", checked)}
+        />
+      </Field>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label={s("spam.inviteCodeExpireDays")}>
+          <TooltipNumberInput
+            value={getNumber(inviteCodeConfig.expireDays) || 7}
+            min={1}
+            max={365}
+            tooltip={s("spam.inviteCodeExpireDaysTooltip")}
+            onChange={(value) => update("inviteCodeConfig.expireDays", value)}
+          />
+        </Field>
+        <Field label={s("spam.inviteCodeFailureLimit")}>
+          <TooltipNumberInput
+            value={getNumber(inviteCodeConfig.failureLimit) || 5}
+            min={1}
+            max={100}
+            tooltip={s("spam.inviteCodeFailureLimitTooltip")}
+            onChange={(value) => update("inviteCodeConfig.failureLimit", value)}
+          />
+        </Field>
+        <Field label={s("spam.inviteCodeFailureWindowMinutes")}>
+          <TooltipNumberInput
+            value={getNumber(inviteCodeConfig.failureWindowMinutes) || 10}
+            min={1}
+            max={1440}
+            tooltip={s("spam.inviteCodeFailureWindowMinutesTooltip")}
+            onChange={(value) =>
+              update("inviteCodeConfig.failureWindowMinutes", value)
+            }
+          />
+        </Field>
+        <Field label={s("spam.inviteCodeLockoutMinutes")}>
+          <TooltipNumberInput
+            value={getNumber(inviteCodeConfig.lockoutMinutes) || 1}
+            min={1}
+            max={1440}
+            tooltip={s("spam.inviteCodeLockoutMinutesTooltip")}
+            onChange={(value) =>
+              update("inviteCodeConfig.lockoutMinutes", value)
+            }
+          />
+        </Field>
+      </div>
       <SectionTitle>{s("spam.frequencyTitle")}</SectionTitle>
       <FrequencyLimitCard
         title={s("spam.userRateLimit")}
@@ -1986,46 +2038,162 @@ type OIDCProviderRow = {
   requireVerifiedEmail: boolean
 }
 
-function OIDCProvidersEditor({ value, onChange }: { value: SettingValue; onChange: (value: SettingValue[]) => void }) {
-  const providers = React.useMemo<OIDCProviderRow[]>(() => Array.isArray(value) ? value.map((item) => {
-    const provider = getObject(item)
-    return {
-      key: getString(provider.key), name: getString(provider.name), issuer: getString(provider.issuer),
-      clientId: getString(provider.clientId), clientSecret: getString(provider.clientSecret),
-      scopes: getStringArray(provider.scopes), enabled: Boolean(provider.enabled),
-      requireVerifiedEmail: Boolean(provider.requireVerifiedEmail),
-    }
-  }) : [], [value])
-  const commit = (next: OIDCProviderRow[]) => onChange(next as unknown as SettingValue[])
+function OIDCProvidersEditor({
+  value,
+  onChange,
+}: {
+  value: SettingValue
+  onChange: (value: SettingValue[]) => void
+}) {
+  const providers = React.useMemo<OIDCProviderRow[]>(
+    () =>
+      Array.isArray(value)
+        ? value.map((item) => {
+            const provider = getObject(item)
+            return {
+              key: getString(provider.key),
+              name: getString(provider.name),
+              issuer: getString(provider.issuer),
+              clientId: getString(provider.clientId),
+              clientSecret: getString(provider.clientSecret),
+              scopes: getStringArray(provider.scopes),
+              enabled: Boolean(provider.enabled),
+              requireVerifiedEmail: Boolean(provider.requireVerifiedEmail),
+            }
+          })
+        : [],
+    [value]
+  )
+  const commit = (next: OIDCProviderRow[]) =>
+    onChange(next as unknown as SettingValue[])
   const updateProvider = (index: number, patch: Partial<OIDCProviderRow>) =>
-    commit(providers.map((provider, current) => current === index ? { ...provider, ...patch } : provider))
+    commit(
+      providers.map((provider, current) =>
+        current === index ? { ...provider, ...patch } : provider
+      )
+    )
   return (
     <LoginCard title="OIDC / Single Sign-On">
       <div className="space-y-5">
         {providers.map((provider, index) => (
-          <div key={`${provider.key}-${index}`} className="space-y-4 rounded-lg border p-4">
+          <div
+            key={`${provider.key}-${index}`}
+            className="space-y-4 rounded-lg border p-4"
+          >
             <div className="flex items-center justify-between gap-3">
-              <span className="text-sm font-medium">Identity provider {index + 1}</span>
-              <Button type="button" size="sm" variant="outline" onClick={() => commit(providers.filter((_, current) => current !== index))}>
+              <span className="text-sm font-medium">
+                Identity provider {index + 1}
+              </span>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  commit(providers.filter((_, current) => current !== index))
+                }
+              >
                 <Trash2Icon className="mr-1 size-4" /> Remove
               </Button>
             </div>
             <Field label="Enable">
-              <SwitchControl checked={provider.enabled} onChange={(enabled) => updateProvider(index, { enabled })} />
+              <SwitchControl
+                checked={provider.enabled}
+                onChange={(enabled) => updateProvider(index, { enabled })}
+              />
             </Field>
-            <Field label="Display name"><Input value={provider.name} placeholder="Company SSO" onChange={(event) => updateProvider(index, { name: event.target.value })} /></Field>
-            <Field label="Provider key"><Input value={provider.key} placeholder="company-sso" onChange={(event) => updateProvider(index, { key: event.target.value })} /></Field>
-            <Field label="Issuer URL"><Input value={provider.issuer} placeholder="https://sso.example.com/realms/community" onChange={(event) => updateProvider(index, { issuer: event.target.value })} /></Field>
-            <Field label="Client ID"><Input value={provider.clientId} onChange={(event) => updateProvider(index, { clientId: event.target.value })} /></Field>
-            <Field label="Client Secret"><Input type="password" value={provider.clientSecret} onChange={(event) => updateProvider(index, { clientSecret: event.target.value })} /></Field>
-            <Field label="Scopes (comma-separated)"><Input value={provider.scopes.join(", ")} placeholder="openid, profile, email" onChange={(event) => updateProvider(index, { scopes: event.target.value.split(",").map((scope) => scope.trim()).filter(Boolean) })} /></Field>
-            <Field label="Require verified email"><SwitchControl checked={provider.requireVerifiedEmail} onChange={(requireVerifiedEmail) => updateProvider(index, { requireVerifiedEmail })} /></Field>
+            <Field label="Display name">
+              <Input
+                value={provider.name}
+                placeholder="Company SSO"
+                onChange={(event) =>
+                  updateProvider(index, { name: event.target.value })
+                }
+              />
+            </Field>
+            <Field label="Provider key">
+              <Input
+                value={provider.key}
+                placeholder="company-sso"
+                onChange={(event) =>
+                  updateProvider(index, { key: event.target.value })
+                }
+              />
+            </Field>
+            <Field label="Issuer URL">
+              <Input
+                value={provider.issuer}
+                placeholder="https://sso.example.com/realms/community"
+                onChange={(event) =>
+                  updateProvider(index, { issuer: event.target.value })
+                }
+              />
+            </Field>
+            <Field label="Client ID">
+              <Input
+                value={provider.clientId}
+                onChange={(event) =>
+                  updateProvider(index, { clientId: event.target.value })
+                }
+              />
+            </Field>
+            <Field label="Client Secret">
+              <Input
+                type="password"
+                value={provider.clientSecret}
+                onChange={(event) =>
+                  updateProvider(index, { clientSecret: event.target.value })
+                }
+              />
+            </Field>
+            <Field label="Scopes (comma-separated)">
+              <Input
+                value={provider.scopes.join(", ")}
+                placeholder="openid, profile, email"
+                onChange={(event) =>
+                  updateProvider(index, {
+                    scopes: event.target.value
+                      .split(",")
+                      .map((scope) => scope.trim())
+                      .filter(Boolean),
+                  })
+                }
+              />
+            </Field>
+            <Field label="Require verified email">
+              <SwitchControl
+                checked={provider.requireVerifiedEmail}
+                onChange={(requireVerifiedEmail) =>
+                  updateProvider(index, { requireVerifiedEmail })
+                }
+              />
+            </Field>
           </div>
         ))}
-        <Button type="button" variant="outline" onClick={() => commit([...providers, { key: "", name: "", issuer: "", clientId: "", clientSecret: "", scopes: ["openid", "profile", "email"], enabled: false, requireVerifiedEmail: true }])}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() =>
+            commit([
+              ...providers,
+              {
+                key: "",
+                name: "",
+                issuer: "",
+                clientId: "",
+                clientSecret: "",
+                scopes: ["openid", "profile", "email"],
+                enabled: false,
+                requireVerifiedEmail: true,
+              },
+            ])
+          }
+        >
           <PlusIcon className="mr-2 size-4" /> Add OIDC provider
         </Button>
-        <p className="text-xs text-muted-foreground">The issuer must be an HTTPS OpenID Connect Discovery URL. Register the callback URL shown in the release notes with your identity provider.</p>
+        <p className="text-xs text-muted-foreground">
+          The issuer must be an HTTPS OpenID Connect Discovery URL. Register the
+          callback URL shown in the release notes with your identity provider.
+        </p>
       </div>
     </LoginCard>
   )

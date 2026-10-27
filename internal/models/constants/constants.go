@@ -72,6 +72,7 @@ const (
 	SysConfigQaBountyMax                = "qaBountyMax"                // 问答悬赏积分上限
 	SysConfigQaBountyRequired           = "qaBountyRequired"           // 问答帖是否必填悬赏
 	SysConfigNotificationTypes          = "notificationTypes"          // 通知类型配置（站内信+邮件开关）
+	SysConfigInviteCodeConfig           = "inviteCodeConfig"           // 邀请码注册配置
 )
 
 const (
@@ -88,6 +89,7 @@ const (
 	EntityCheckIn    = "checkIn"
 	EntityTask       = "task"
 	EntityAttachment = "attachment"
+	EntityInviteCode = "inviteCode"
 )
 
 const (
@@ -142,6 +144,17 @@ const (
 	OpTypeUpdate          = "update"
 	OpTypeForbidden       = "forbidden"
 	OpTypeRemoveForbidden = "removeForbidden"
+	OpTypeGenerate        = "generate"
+	OpTypeDisable         = "disable"
+	OpTypeView            = "view"
+)
+
+// InviteCodeStatus 邀请码状态
+const (
+	InviteCodeStatusUnused   = "unused"
+	InviteCodeStatusUsed     = "used"
+	InviteCodeStatusDisabled = "disabled"
+	InviteCodeStatusExpired  = "expired"
 )
 
 // 状态

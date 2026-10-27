@@ -81,6 +81,11 @@ var (
 		{Method: "GET", Pattern: "/api/admin/seo/sitemap/status", Permissions: []PermissionDefinition{PermissionSitemapGenerate}},
 		{Method: "POST", Pattern: "/api/admin/seo/sitemap/generate", Permissions: []PermissionDefinition{PermissionSitemapGenerate}},
 
+		{Method: "GET", Pattern: "/api/admin/invite-code/*", Permissions: []PermissionDefinition{PermissionInviteCodeView}},
+		{Method: "POST", Pattern: "/api/admin/invite-code/list", Permissions: []PermissionDefinition{PermissionInviteCodeView}},
+		{Method: "POST", Pattern: "/api/admin/invite-code/create", Permissions: []PermissionDefinition{PermissionInviteCodeCreate}},
+		{Method: "POST", Pattern: "/api/admin/invite-code/disable", Permissions: []PermissionDefinition{PermissionInviteCodeDisable}},
+
 		{Method: "GET", Pattern: "/api/admin/badge/*", Permissions: []PermissionDefinition{PermissionBadgeView}},
 		{Method: "POST", Pattern: "/api/admin/badge/list", Permissions: []PermissionDefinition{PermissionBadgeView}},
 		{Method: "POST", Pattern: "/api/admin/badge/create", Permissions: []PermissionDefinition{PermissionBadgeCreate}},

@@ -80,9 +80,9 @@ export function InstallWizard({
   const [language, setLanguage] = React.useState<Locale>("en-US")
   const t = React.useMemo(() => createT(language), [language])
   const [dbConfig, setDbConfig] = React.useState({
-    type: "mysql" as DbType,
-    host: "localhost",
-    port: "3306",
+    type: "sqlite" as DbType,
+    host: "",
+    port: "",
     database: "",
     username: "",
     password: "",
@@ -99,6 +99,7 @@ export function InstallWizard({
     password: "",
     passwordConfirm: "",
   })
+  const [setupToken, setSetupToken] = React.useState("")
   const [avatar, setAvatar] = React.useState(randomAvatar)
   const [dbError, setDbError] = React.useState("")
   const [dbSuccess, setDbSuccess] = React.useState("")
@@ -135,7 +136,8 @@ export function InstallWizard({
       adminInfo.username && adminInfo.password && adminInfo.passwordConfirm
     ) &&
     isPasswordValid(adminInfo.password) &&
-    adminInfo.password === adminInfo.passwordConfirm
+    adminInfo.password === adminInfo.passwordConfirm &&
+    Boolean(setupToken.trim())
 
   function updateDbConfig(values: Partial<typeof dbConfig>) {
     if (dockerBuiltinDb) return
@@ -192,6 +194,10 @@ export function InstallWizard({
   }
 
   function validateAdminForm() {
+    if (!setupToken.trim()) {
+      setAdminError(t("pages.install.admin.setupTokenError"))
+      return false
+    }
     if (!adminInfo.username) {
       setAdminError(t("pages.install.admin.usernameError"))
       return false
@@ -301,7 +307,7 @@ export function InstallWizard({
           siteDescription: siteInfo.description,
           baseURL: siteInfo.baseURL.trim() || "/",
           dbConfig: {
-            type: dbConfig.type,
+            type: effectiveDbType,
             host: dbConfig.host,
             port: dbConfig.port,
             database: dbConfig.database,
@@ -312,6 +318,7 @@ export function InstallWizard({
           password: adminInfo.password,
           avatar,
           language,
+          setupToken: setupToken.trim(),
         }),
       })
       const data = (await response.json()) as {
@@ -673,6 +680,18 @@ export function InstallWizard({
               />
               <FormField
                 required
+                id="setup-token"
+                label={t("pages.install.admin.setupToken")}
+                value={setupToken}
+                placeholder={t("pages.install.admin.setupTokenPlaceholder")}
+                help={t("pages.install.admin.setupTokenHelp")}
+                onChange={(value) => {
+                  setSetupToken(value)
+                  setAdminError("")
+                }}
+              />
+              <FormField
+                required
                 id="admin-username"
                 label={t("pages.install.admin.username")}
                 value={adminInfo.username}
@@ -728,7 +747,9 @@ export function InstallWizard({
                   </Button>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="h-16 w-16 overflow-hidden rounded-full border-2 border-primary/60 shadow-sm">                    <img
+                  <div className="h-16 w-16 overflow-hidden rounded-full border-2 border-primary/60 shadow-sm">
+                    {" "}
+                    <img
                       src={avatar}
                       alt={t("pages.install.admin.avatar")}
                       className="h-full w-full object-cover"
@@ -749,7 +770,9 @@ export function InstallWizard({
                           : "bg-white ring-gray-200"
                       }`}
                       onClick={() => setAvatar(item)}
-                    >                      <img
+                    >
+                      {" "}
+                      <img
                         src={item}
                         alt={item}
                         className="h-full w-full object-cover"

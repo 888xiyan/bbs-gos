@@ -58,7 +58,8 @@ func ConfigConfigs(ctx *gin.Context) {
 				GoogleLogin:   dto.OAuthConfig{Enabled: loginConfig.GoogleLogin.Enabled},
 				GithubLogin:   dto.EnabledConfig{Enabled: loginConfig.GithubLogin.Enabled},
 			},
-			ScriptInjections: services.SysConfigService.GetScriptInjections(),
+			ScriptInjections:   services.SysConfigService.GetScriptInjections(),
+			InviteCodeRequired: services.SysConfigService.IsInviteCodeRequired(),
 		}
 		for _, provider := range loginConfig.OIDCProviders {
 			if provider.Enabled {

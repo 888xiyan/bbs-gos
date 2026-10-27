@@ -209,11 +209,19 @@ func (s *userService) GetByPhone(phone string) *models.User {
 	return repositories.UserRepository.GetByPhone(sqls.DB(), phone)
 }
 
-// SignUp 注册
+// SignUp creates a user without enforcing public registration policy. It is
+// retained for trusted administrator-created accounts.
 func (s *userService) SignUp(username, email, nickname, password, rePassword string) (*models.User, error) {
+	return s.SignUpWithInviteCode(username, email, nickname, password, rePassword, "", "", false)
+}
+
+// SignUpWithInviteCode creates a user and, when required, atomically consumes a
+// registration invite code in the same transaction.
+func (s *userService) SignUpWithInviteCode(username, email, nickname, password, rePassword, inviteCode, ip string, enforceInviteCode bool) (*models.User, error) {
 	username = strings.TrimSpace(username)
 	email = strings.TrimSpace(email)
 	nickname = strings.TrimSpace(nickname)
+	inviteCode = strings.TrimSpace(inviteCode)
 
 	// 验证昵称
 	if len(nickname) == 0 {
@@ -248,19 +256,59 @@ func (s *userService) SignUp(username, email, nickname, password, rePassword str
 		}
 	}
 
-	user := &models.User{
-		Username:   sqls.SqlNullString(username),
-		Email:      sqls.SqlNullString(email),
-		Nickname:   nickname,
-		Password:   passwd.EncodePassword(password),
-		Status:     constants.StatusOk,
-		CreateTime: dates.NowTimestamp(),
-		UpdateTime: dates.NowTimestamp(),
+	inviteRequired := enforceInviteCode && SysConfigService.IsInviteCodeRequired()
+	if inviteRequired {
+		if err := InviteCodeService.CheckFailureLimit(ip, email, username); err != nil {
+			return nil, errors.New(locales.Get("user.invite_code_rate_limited"))
+		}
+		if !validInviteCodeFormat(inviteCode) {
+			InviteCodeService.RecordFailure(ip, email, username)
+			return nil, errors.New(locales.Get("user.invite_code_invalid"))
+		}
+	} else if enforceInviteCode && inviteCode != "" && !validInviteCodeFormat(inviteCode) {
+		return nil, errors.New(locales.Get("user.invite_code_invalid"))
 	}
 
-	err = repositories.UserRepository.Create(sqls.DB(), user)
+	var user *models.User
+	err = sqls.DB().Transaction(func(tx *gorm.DB) error {
+		now := dates.NowTimestamp()
+		user = &models.User{
+			Username:   sqls.SqlNullString(username),
+			Email:      sqls.SqlNullString(email),
+			Nickname:   nickname,
+			Password:   passwd.EncodePassword(password),
+			Status:     constants.StatusOk,
+			CreateTime: now,
+			UpdateTime: now,
+		}
+
+		if err := repositories.UserRepository.Create(tx, user); err != nil {
+			return err
+		}
+
+		if inviteRequired {
+			invite, consumeErr := InviteCodeService.Consume(tx, inviteCode, user.Id)
+			if consumeErr != nil {
+				InviteCodeService.RecordFailure(ip, email, username)
+				if errors.Is(consumeErr, ErrInviteCodeInvalid) {
+					return errors.New(locales.Get("user.invite_code_invalid"))
+				}
+				return consumeErr
+			}
+			user.InviteCodeId = invite.Id
+			user.InvitedByUserId = invite.CreatedByUserId
+			return repositories.UserRepository.Updates(tx, user.Id, map[string]interface{}{
+				"invite_code_id":     invite.Id,
+				"invited_by_user_id": invite.CreatedByUserId,
+			})
+		}
+		return nil
+	})
 	if err != nil {
 		return nil, err
+	}
+	if inviteRequired {
+		InviteCodeService.ResetFailures(ip, email, username)
 	}
 	search.UpdateUserIndex(user)
 	return user, nil

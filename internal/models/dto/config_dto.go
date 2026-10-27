@@ -40,6 +40,7 @@ type SysConfigAdminResponse struct {
 	UploadConfig               UploadConfig                `json:"uploadConfig"`               // 上传配置
 	AttachmentConfig           AttachmentConfig            `json:"attachmentConfig"`           // 附件配置
 	ScriptInjections           []ScriptInjection           `json:"scriptInjections"`           // head脚本注入
+	InviteCodeConfig           InviteCodeConfig            `json:"inviteCodeConfig"`           // 邀请码注册配置
 }
 
 // SysConfigOpenResponse
@@ -76,6 +77,27 @@ type SysConfigOpenResponse struct {
 	AttachmentConfig           AttachmentConfig  `json:"attachmentConfig"`           // 附件配置
 	LoginConfig                OpenLoginConfig   `json:"loginConfig"`                // 登录配置
 	ScriptInjections           []ScriptInjection `json:"scriptInjections"`           // head脚本注入
+	InviteCodeRequired         bool              `json:"inviteCodeRequired"`         // 注册是否必须填写邀请码
+}
+
+// InviteCodeConfig 邀请码注册配置（单 Key 存 JSON）
+type InviteCodeConfig struct {
+	Enabled              bool `json:"enabled"`              // 是否启用邀请码注册
+	ExpireDays           int  `json:"expireDays"`           // 邀请码有效天数
+	FailureLimit         int  `json:"failureLimit"`         // 单个窗口内允许的失败次数
+	FailureWindowMinutes int  `json:"failureWindowMinutes"` // 失败统计窗口（分钟）
+	LockoutMinutes       int  `json:"lockoutMinutes"`       // 达到失败上限后的锁定时间（分钟）
+}
+
+// DefaultInviteCodeConfig 返回默认邀请码注册配置。
+func DefaultInviteCodeConfig() InviteCodeConfig {
+	return InviteCodeConfig{
+		Enabled:              true,
+		ExpireDays:           7,
+		FailureLimit:         5,
+		FailureWindowMinutes: 10,
+		LockoutMinutes:       1,
+	}
 }
 
 type ScriptInjection struct {

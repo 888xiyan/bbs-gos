@@ -282,7 +282,13 @@ export function useDashboardDataPage({
   }
 
   function openCreate() {
-    setFormValues({})
+    const nextValues: Record<string, AdminFormValue> = {}
+    config.formFields?.forEach((field) => {
+      if (field.defaultValue !== undefined) {
+        nextValues[field.name] = field.defaultValue
+      }
+    })
+    setFormValues(nextValues)
     setFormErrors({})
     setEditing({})
   }

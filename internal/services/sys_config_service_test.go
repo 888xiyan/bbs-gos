@@ -38,3 +38,12 @@ func TestNormalizeTopicListStyle_RejectsUnknownStyle(t *testing.T) {
 		t.Fatalf("expected unknown topic list style to default to %q, got %q", constants.TopicListStyleDefault, got)
 	}
 }
+
+func TestValidateInviteCodeConfig(t *testing.T) {
+	if err := validateInviteCodeConfig(`{"enabled":true,"expireDays":7,"failureLimit":5,"failureWindowMinutes":10,"lockoutMinutes":1}`); err != nil {
+		t.Fatalf("expected valid invite config: %v", err)
+	}
+	if err := validateInviteCodeConfig(`{"enabled":true,"expireDays":0}`); err == nil {
+		t.Fatal("expected invalid expiry to be rejected")
+	}
+}

@@ -156,6 +156,7 @@ type LoginSignupReq struct {
 	Password        string `json:"password" form:"password"`
 	RePassword      string `json:"rePassword" form:"rePassword"`
 	Nickname        string `json:"nickname" form:"nickname"`
+	InviteCode      string `json:"inviteCode" form:"inviteCode"`
 	Redirect        string `json:"redirect" form:"redirect"`
 }
 

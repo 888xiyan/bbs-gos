@@ -126,3 +126,23 @@ func TestAdminPermissionRegistryRejectsCommentManagementPaths(t *testing.T) {
 		}
 	}
 }
+
+func TestAdminPermissionRegistryProtectsInviteCodeRoutes(t *testing.T) {
+	for _, tt := range []struct {
+		method string
+		path   string
+		want   PermissionDefinition
+	}{
+		{"POST", "/api/admin/invite-code/list", PermissionInviteCodeView},
+		{"POST", "/api/admin/invite-code/create", PermissionInviteCodeCreate},
+		{"POST", "/api/admin/invite-code/disable", PermissionInviteCodeDisable},
+	} {
+		code, ok := GetAdminPermissionCode(tt.method, tt.path)
+		if !ok {
+			t.Fatalf("expected %s %s permission to be registered", tt.method, tt.path)
+		}
+		if code != tt.want.Code {
+			t.Fatalf("expected %s, got %s", tt.want.Code, code)
+		}
+	}
+}

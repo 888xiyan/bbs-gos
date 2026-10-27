@@ -120,6 +120,11 @@ func (s *sysConfigService) SetAll(configStr string) error {
 			}
 		}
 	}
+	if inviteCodeConfig := json.Get(constants.SysConfigInviteCodeConfig); inviteCodeConfig.Exists() {
+		if err := validateInviteCodeConfig(inviteCodeConfig.String()); err != nil {
+			return err
+		}
+	}
 	return sqls.DB().Transaction(func(tx *gorm.DB) error {
 		for k := range configs {
 			v := json.Get(k).String()
@@ -230,6 +235,67 @@ func (s *sysConfigService) IsTopicCaptcha() bool {
 
 func (s *sysConfigService) GetAntiAbuseConfig() dto.AntiAbuseConfig {
 	return parseAntiAbuseConfig(cache.SysConfigCache.GetStr(constants.SysConfigAntiAbuseConfig))
+}
+
+// GetInviteCodeConfig returns the registration invite-code policy.
+func (s *sysConfigService) GetInviteCodeConfig() dto.InviteCodeConfig {
+	return parseInviteCodeConfig(cache.SysConfigCache.GetStr(constants.SysConfigInviteCodeConfig))
+}
+
+// GetInviteCodeConfigTx reads the policy through an active write transaction.
+func (s *sysConfigService) GetInviteCodeConfigTx(tx *gorm.DB) dto.InviteCodeConfig {
+	config := repositories.SysConfigRepository.GetByKey(tx, constants.SysConfigInviteCodeConfig)
+	if config == nil {
+		return dto.DefaultInviteCodeConfig()
+	}
+	return parseInviteCodeConfig(config.Value)
+}
+
+func parseInviteCodeConfig(raw string) dto.InviteCodeConfig {
+	config := dto.DefaultInviteCodeConfig()
+	if strs.IsBlank(raw) {
+		return config
+	}
+	if err := json.Unmarshal([]byte(raw), &config); err != nil {
+		slog.Warn("邀请码配置数据错误", slog.Any("err", err))
+		return dto.DefaultInviteCodeConfig()
+	}
+	normalizeInviteCodeConfig(&config)
+	return config
+}
+
+func validateInviteCodeConfig(raw string) error {
+	config := dto.DefaultInviteCodeConfig()
+	if err := json.Unmarshal([]byte(raw), &config); err != nil {
+		return errors.New("invalid invite code configuration")
+	}
+	if config.ExpireDays < 1 || config.ExpireDays > 365 ||
+		config.FailureLimit < 1 || config.FailureLimit > 100 ||
+		config.FailureWindowMinutes < 1 || config.FailureWindowMinutes > 1440 ||
+		config.LockoutMinutes < 1 || config.LockoutMinutes > 1440 {
+		return errors.New("invalid invite code configuration")
+	}
+	return nil
+}
+
+func normalizeInviteCodeConfig(config *dto.InviteCodeConfig) {
+	defaults := dto.DefaultInviteCodeConfig()
+	if config.ExpireDays < 1 || config.ExpireDays > 365 {
+		config.ExpireDays = defaults.ExpireDays
+	}
+	if config.FailureLimit < 1 || config.FailureLimit > 100 {
+		config.FailureLimit = defaults.FailureLimit
+	}
+	if config.FailureWindowMinutes < 1 || config.FailureWindowMinutes > 1440 {
+		config.FailureWindowMinutes = defaults.FailureWindowMinutes
+	}
+	if config.LockoutMinutes < 1 || config.LockoutMinutes > 1440 {
+		config.LockoutMinutes = defaults.LockoutMinutes
+	}
+}
+
+func (s *sysConfigService) IsInviteCodeRequired() bool {
+	return s.GetInviteCodeConfig().Enabled
 }
 
 // GetAntiAbuseConfigTx reads through the active write transaction. This avoids

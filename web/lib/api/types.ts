@@ -200,6 +200,7 @@ export interface SiteConfig {
   }
   createArticleEmailVerified?: boolean
   createCommentEmailVerified?: boolean
+  inviteCodeRequired?: boolean
   footerLinks?: Array<{
     text?: Record<string, string>
     url?: string

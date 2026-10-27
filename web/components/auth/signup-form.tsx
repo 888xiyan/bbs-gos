@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useI18n } from "@/lib/i18n/provider"
 import { toast } from "@/lib/toast"
+import { useAppConfig } from "@/components/app/app-provider"
 
 const initialState: AuthActionState = { ok: false }
 
@@ -25,6 +26,8 @@ function authLink(path: string, redirect?: string) {
 export function SignupForm({ redirect }: { redirect?: string }) {
   const router = useRouter()
   const { t } = useI18n()
+  const config = useAppConfig()
+  const inviteCodeRequired = Boolean(config?.inviteCodeRequired)
   const [state, action, pending] = useActionState(signupAction, initialState)
   const formRef = useRef<HTMLFormElement>(null)
   const captchaRef = useRef<CaptchaChallengeHandle>(null)
@@ -34,6 +37,7 @@ export function SignupForm({ redirect }: { redirect?: string }) {
     email: "",
     password: "",
     rePassword: "",
+    inviteCode: "",
   })
   const wasPendingRef = useRef(false)
 
@@ -77,6 +81,10 @@ export function SignupForm({ redirect }: { redirect?: string }) {
       toast.error(t("user.signup.passwordMismatch"))
       return false
     }
+    if (inviteCodeRequired && !/^\d{6}$/.test(form.inviteCode)) {
+      toast.error(t("user.signup.inviteCodeInvalid"))
+      return false
+    }
     return true
   }
 
@@ -108,6 +116,27 @@ export function SignupForm({ redirect }: { redirect?: string }) {
         onSubmit={onSubmit}
       >
         <input type="hidden" name="redirect" value={redirect || ""} />
+        {inviteCodeRequired ? (
+          <div className="space-y-2">
+            <Label htmlFor="inviteCode">
+              {t("user.signup.inviteCode")}
+              <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="inviteCode"
+              name="inviteCode"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              placeholder={t("user.signup.inviteCodePlaceholder")}
+              value={form.inviteCode}
+              onChange={updateField("inviteCode")}
+            />
+            <p className="text-sm text-muted-foreground">
+              {t("user.signup.inviteCodeHelp")}
+            </p>
+          </div>
+        ) : null}
         <div className="space-y-2">
           <Label htmlFor="nickname">
             {t("user.signup.nickname")}

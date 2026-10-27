@@ -28,6 +28,7 @@ export function signup(
     email: string
     password: string
     rePassword: string
+    inviteCode?: string
     redirect?: string
   } & CaptchaFields
 ) {

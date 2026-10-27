@@ -3,7 +3,8 @@ package permissions
 import "strings"
 
 const (
-	TypeDashboard = "dashboard"
+	TypeDashboard  = "dashboard"
+	TypeInviteCode = "invite_code"
 )
 
 const (
@@ -99,6 +100,10 @@ var (
 	PermissionSearchReindex   = PermissionDefinition{Type: TypeDashboard, Code: "dashboard.search.reindex", GroupName: GroupSystem, SortNo: 1120, NameEn: "Rebuild Search Index", NameZh: "重建搜索索引"}
 	PermissionSitemapGenerate = PermissionDefinition{Type: TypeDashboard, Code: "dashboard.sitemap.generate", GroupName: GroupSystem, SortNo: 1130, NameEn: "Generate Sitemap", NameZh: "生成 Sitemap"}
 
+	PermissionInviteCodeView    = PermissionDefinition{Type: TypeInviteCode, Code: "invite_code.view", GroupName: GroupSystem, SortNo: 1140, NameEn: "View Invite Codes", NameZh: "查看邀请码"}
+	PermissionInviteCodeCreate  = PermissionDefinition{Type: TypeInviteCode, Code: "invite_code.create", GroupName: GroupSystem, SortNo: 1150, NameEn: "Create Invite Codes", NameZh: "生成邀请码"}
+	PermissionInviteCodeDisable = PermissionDefinition{Type: TypeInviteCode, Code: "invite_code.disable", GroupName: GroupSystem, SortNo: 1160, NameEn: "Disable Invite Codes", NameZh: "禁用邀请码"}
+
 	PermissionRoleView             = PermissionDefinition{Type: TypeDashboard, Code: "dashboard.role.view", GroupName: GroupSystem, SortNo: 1200, NameEn: "View Roles", NameZh: "查看角色"}
 	PermissionRoleCreate           = PermissionDefinition{Type: TypeDashboard, Code: "dashboard.role.create", GroupName: GroupSystem, SortNo: 1210, NameEn: "Create Roles", NameZh: "创建角色"}
 	PermissionRoleUpdate           = PermissionDefinition{Type: TypeDashboard, Code: "dashboard.role.update", GroupName: GroupSystem, SortNo: 1220, NameEn: "Update Roles", NameZh: "编辑角色"}
@@ -170,6 +175,9 @@ var Permissions = []PermissionDefinition{
 	PermissionSettingUpdate,
 	PermissionSearchReindex,
 	PermissionSitemapGenerate,
+	PermissionInviteCodeView,
+	PermissionInviteCodeCreate,
+	PermissionInviteCodeDisable,
 	PermissionEmailLogView,
 	PermissionUserTaskLogView,
 	PermissionUserExpLogView,

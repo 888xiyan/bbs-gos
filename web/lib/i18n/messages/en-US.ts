@@ -94,6 +94,7 @@ const enUS = {
       system: "System",
       settings: "Settings",
       siteSettings: "Settings",
+      inviteCodes: "Invite Codes",
       emailLogs: "Email Logs",
     },
     shortcuts: {
@@ -132,6 +133,8 @@ const enUS = {
       expand: "Expand",
       collapse: "Collapse",
       assignPermissions: "Permissions",
+      copyInviteCode: "Copy invite code",
+      disableInviteCode: "Disable invite code",
     },
     messages: {
       saved: "Saved",
@@ -146,10 +149,19 @@ const enUS = {
       resetPassword: "New password: {password}",
       reportProcessed: "Report marked as processed",
       reportIgnored: "Report ignored",
+      inviteCodeCopied: "Invite code copied",
+      inviteCodeDisabled: "Invite code disabled",
     },
     confirm: {
       title: "Confirm action",
       ok: "Confirm",
+    },
+    confirmDisableInviteCode: "Disable this unused invite code?",
+    inviteCodeStatus: {
+      unused: "Unused",
+      used: "Used",
+      disabled: "Disabled",
+      expired: "Expired",
     },
     resetPassword: {
       title: "Password Reset Successfully",
@@ -264,6 +276,7 @@ const enUS = {
       invalidNumber: "Enter a valid number",
       minValue: "Must be at least {min}",
       maxValue: "Must be at most {max}",
+      copyFailed: "Failed to copy invite code",
       levelMustBeContinuous: "Levels must start at 1 and be continuous",
       levelExpMustIncrease: "Required XP must strictly increase by level",
     },
@@ -513,6 +526,22 @@ const enUS = {
         userObserveSeconds: "User Observation Period (seconds)",
         userObserveSecondsTooltip:
           "During the observation period, users cannot post topics, tweets, etc. Set to 0 for no observation period.",
+        inviteCodeTitle: "Registration Invite Codes",
+        inviteCodeEnabled: "Require Invite Code",
+        inviteCodeEnabledTooltip:
+          "When enabled, public signup requires a valid one-time six-digit invite code.",
+        inviteCodeExpireDays: "Invite Code Validity (days)",
+        inviteCodeExpireDaysTooltip:
+          "New invite codes expire after this many days.",
+        inviteCodeFailureLimit: "Failed Attempts",
+        inviteCodeFailureLimitTooltip:
+          "Maximum failed invite-code attempts before temporary lockout.",
+        inviteCodeFailureWindowMinutes: "Failure Window (minutes)",
+        inviteCodeFailureWindowMinutesTooltip:
+          "Failed attempts are counted within this rolling window.",
+        inviteCodeLockoutMinutes: "Lockout (minutes)",
+        inviteCodeLockoutMinutesTooltip:
+          "Temporary lockout duration after reaching the failure limit.",
         frequencyTitle: "Publish Frequency Limits",
         userRateLimit: "User Limits",
         ipRateLimit: "IP Limits",
@@ -600,7 +629,8 @@ const enUS = {
             "Object access URL prefix (custom domain / CDN / R2 public domain); derived from Endpoint+Bucket when empty",
           s3Endpoint:
             "Enter S3 API Endpoint, e.g.: https://<accountid>.r2.cloudflarestorage.com",
-          s3Region: "Region; use 'auto' for Cloudflare R2, 'us-east-1' for MinIO/RustFS",
+          s3Region:
+            "Region; use 'auto' for Cloudflare R2, 'us-east-1' for MinIO/RustFS",
           s3Bucket: "Enter Bucket name",
           s3AccessKeyId: "Enter AccessKey ID",
           s3AccessKeySecret: "Enter AccessKey Secret",
@@ -726,6 +756,17 @@ const enUS = {
       title: "Title",
       user: "User",
       userId: "User ID",
+      inviteCode: "Invite Code",
+      createdBy: "Created By",
+      createdByUserId: "Creator User ID",
+      usedBy: "Used By",
+      usedByUserId: "User ID",
+      usedStartTime: "Used After",
+      usedEndTime: "Used Before",
+      expiresAt: "Expires At",
+      usedAt: "Used At",
+      note: "Note",
+      count: "Count",
       recommend: "Feature",
       qaStatus: "Q&A Status",
       vote: "Vote",
@@ -835,6 +876,11 @@ const enUS = {
       userReports: {
         title: "User Reports",
         description: "Inspect content reports submitted by community users.",
+      },
+      inviteCodes: {
+        title: "Registration Invite Codes",
+        description:
+          "Generate, inspect, copy, and disable one-time registration invite codes.",
       },
       emailLogs: {
         title: "Email Logs",
@@ -1618,6 +1664,10 @@ const enUS = {
       },
       admin: {
         description: "Create the first administrator account.",
+        setupToken: "Setup token",
+        setupTokenPlaceholder: "Enter the one-time setup token",
+        setupTokenHelp:
+          "Copy the token from setup-token.txt or the startup log. It is required once and removed after installation.",
         username: "Admin username",
         usernamePlaceholder: "Enter an admin username",
         password: "Admin password",
@@ -1629,6 +1679,7 @@ const enUS = {
         avatarDescription:
           "Choose a default avatar. You can change it later in your profile.",
         usernameError: "Enter an admin username.",
+        setupTokenError: "Enter the one-time setup token.",
         passwordError: "Enter an admin password.",
         passwordHelp: "Password must be at least 6 characters long.",
         passwordTooShortError:
@@ -1783,6 +1834,10 @@ const enUS = {
       passwordHelp: "Password must be at least 6 characters long.",
       confirmPassword: "Confirm Password",
       confirmPasswordPlaceholder: "Enter your password again",
+      inviteCode: "Invite Code",
+      inviteCodePlaceholder: "Enter the 6-digit invite code",
+      inviteCodeHelp: "Registration requires a one-time invite code.",
+      inviteCodeInvalid: "Enter a valid 6-digit invite code",
       signupBtn: "Sign up",
       alreadyHaveAccount: "Already have an account? Sign in",
       nicknameRequired: "Enter a nickname",

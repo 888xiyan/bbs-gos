@@ -76,6 +76,10 @@ user:
   password_already_set: "Password already set. Please use the change password page."
   password_not_set: "You haven't set a password yet. Please set one first."
   old_password_invalid: "Current password is incorrect"
+  invite_code_required: "A registration invite code is required"
+  invite_code_invalid: "Invalid or unavailable invite code"
+  invite_code_rate_limited: "Too many failed invite-code attempts. Please try again later"
+  invite_code_cannot_disable: "Only unused invite codes can be disabled"
 
 errors:
   not_login: "Please sign in first"

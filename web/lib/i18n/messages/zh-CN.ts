@@ -94,6 +94,7 @@ const zhCN = {
       system: "系统",
       settings: "设置",
       siteSettings: "设置",
+      inviteCodes: "邀请码",
       emailLogs: "邮件日志",
     },
     shortcuts: {
@@ -132,6 +133,8 @@ const zhCN = {
       expand: "展开",
       collapse: "折叠",
       assignPermissions: "分配权限",
+      copyInviteCode: "复制邀请码",
+      disableInviteCode: "禁用邀请码",
     },
     messages: {
       saved: "已保存",
@@ -146,10 +149,19 @@ const zhCN = {
       resetPassword: "新密码：{password}",
       reportProcessed: "举报已处理",
       reportIgnored: "举报已忽略",
+      inviteCodeCopied: "邀请码已复制",
+      inviteCodeDisabled: "邀请码已禁用",
     },
     confirm: {
       title: "确认操作",
       ok: "确认",
+    },
+    confirmDisableInviteCode: "确认禁用这个未使用的邀请码吗？",
+    inviteCodeStatus: {
+      unused: "未使用",
+      used: "已使用",
+      disabled: "已禁用",
+      expired: "已过期",
     },
     resetPassword: {
       title: "密码重置成功",
@@ -263,6 +275,7 @@ const zhCN = {
       invalidNumber: "请输入有效数字",
       minValue: "不能小于 {min}",
       maxValue: "不能大于 {max}",
+      copyFailed: "复制邀请码失败",
       levelMustBeContinuous: "等级必须从 1 开始且连续",
       levelExpMustIncrease: "等级所需经验必须严格递增",
     },
@@ -498,6 +511,19 @@ const zhCN = {
         userObserveSeconds: "用户观察期(秒)",
         userObserveSecondsTooltip:
           "观察期内用户无法发表话题、动态等内容，设置为 0 表示无观察期。",
+        inviteCodeTitle: "注册邀请码",
+        inviteCodeEnabled: "注册需要邀请码",
+        inviteCodeEnabledTooltip:
+          "启用后，公开注册必须填写有效的一次性 6 位邀请码。",
+        inviteCodeExpireDays: "邀请码有效期（天）",
+        inviteCodeExpireDaysTooltip: "新生成的邀请码在指定天数后过期。",
+        inviteCodeFailureLimit: "失败次数上限",
+        inviteCodeFailureLimitTooltip: "达到该失败次数后暂时锁定尝试。",
+        inviteCodeFailureWindowMinutes: "失败统计窗口（分钟）",
+        inviteCodeFailureWindowMinutesTooltip:
+          "在该滚动时间窗口内统计失败次数。",
+        inviteCodeLockoutMinutes: "锁定时间（分钟）",
+        inviteCodeLockoutMinutesTooltip: "达到失败上限后的临时锁定时长。",
         frequencyTitle: "发布频控",
         userRateLimit: "用户频控",
         ipRateLimit: "IP 频控",
@@ -708,6 +734,17 @@ const zhCN = {
       title: "标题",
       user: "用户",
       userId: "用户ID",
+      inviteCode: "邀请码",
+      createdBy: "创建者",
+      createdByUserId: "创建者用户ID",
+      usedBy: "使用者",
+      usedByUserId: "用户ID",
+      usedStartTime: "使用开始时间",
+      usedEndTime: "使用结束时间",
+      expiresAt: "过期时间",
+      usedAt: "使用时间",
+      note: "备注",
+      count: "数量",
       recommend: "推荐",
       qaStatus: "问答状态",
       vote: "投票",
@@ -817,6 +854,10 @@ const zhCN = {
       userReports: {
         title: "用户举报",
         description: "查看社区用户提交的内容举报。",
+      },
+      inviteCodes: {
+        title: "注册邀请码",
+        description: "生成、查看、复制和禁用一次性注册邀请码。",
       },
       emailLogs: {
         title: "邮件日志",
@@ -1580,6 +1621,10 @@ const zhCN = {
       },
       admin: {
         description: "创建第一个管理员账号。",
+        setupToken: "安装令牌",
+        setupTokenPlaceholder: "请输入一次性安装令牌",
+        setupTokenHelp:
+          "请从 setup-token.txt 或启动日志复制令牌。安装完成后该令牌会被删除。",
         username: "管理员用户名",
         usernamePlaceholder: "请输入管理员用户名",
         password: "管理员密码",
@@ -1591,6 +1636,7 @@ const zhCN = {
         avatarDescription:
           "可随机选择一个默认头像，安装后也可以在个人资料中修改。",
         usernameError: "请输入管理员用户名。",
+        setupTokenError: "请输入一次性安装令牌。",
         passwordError: "请输入管理员密码。",
         passwordHelp: "密码长度必须不少于 6 个字符。",
         passwordTooShortError: "管理员密码长度不能少于 6 个字符。",
@@ -1741,6 +1787,10 @@ const zhCN = {
       passwordHelp: "密码长度必须不少于 6 个字。",
       confirmPassword: "确认密码",
       confirmPasswordPlaceholder: "请再次输入密码",
+      inviteCode: "邀请码",
+      inviteCodePlaceholder: "请输入 6 位邀请码",
+      inviteCodeHelp: "注册需要使用一次性邀请码。",
+      inviteCodeInvalid: "请输入有效的 6 位邀请码",
       signupBtn: "注册",
       alreadyHaveAccount: "已有账号，前往登录>>",
       nicknameRequired: "请输入昵称",

@@ -15,6 +15,7 @@ import (
 	"github.com/dchest/captcha"
 	"github.com/mlogclub/simple/common/dates"
 	"github.com/mlogclub/simple/common/strs"
+	"github.com/mlogclub/simple/web"
 
 	"bbs-go/internal/pkg/bbsurls"
 	captcha2 "bbs-go/internal/pkg/captcha"
@@ -47,6 +48,7 @@ func LoginSignup(ctx *gin.Context) {
 	req.Password = strings.TrimSpace(req.Password)
 	req.RePassword = strings.TrimSpace(req.RePassword)
 	req.Nickname = strings.TrimSpace(req.Nickname)
+	req.InviteCode = strings.TrimSpace(req.InviteCode)
 	if req.Redirect == "" {
 		req.Redirect = ctx.Query("redirect")
 	}
@@ -66,7 +68,16 @@ func LoginSignup(ctx *gin.Context) {
 			return
 		}
 	}
-	user, err := services.UserService.SignUp(req.Username, req.Email, req.Nickname, req.Password, req.RePassword)
+	user, err := services.UserService.SignUpWithInviteCode(
+		req.Username,
+		req.Email,
+		req.Nickname,
+		req.Password,
+		req.RePassword,
+		req.InviteCode,
+		web.GetRequestIP(ctx.Request),
+		true,
+	)
 	if err != nil {
 		ginx.WriteJSON(ctx, err)
 		return
