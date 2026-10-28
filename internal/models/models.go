@@ -194,20 +194,22 @@ type Tag struct {
 // 文章
 type Article struct {
 	Model
-	UserId       int64                 `gorm:"index:idx_article_user_id" json:"userId" form:"userId"`           // 所属用户编号
-	Title        string                `gorm:"size:128;not null;" json:"title" form:"title"`                    // 标题
-	Summary      string                `gorm:"type:text" json:"summary" form:"summary"`                         // 摘要
-	Content      string                `gorm:";not null;" json:"content" form:"content"`                        // 内容
-	ContentType  constants.ContentType `gorm:"type:varchar(32);not null" json:"contentType" form:"contentType"` // 内容类型：markdown、html
-	Cover        string                `gorm:"type:text;" json:"cover" form:"cover"`                            // 封面图
-	Status       int                   `gorm:"type:int;index:idx_article_status" json:"status" form:"status"`   // 状态
-	SourceUrl    string                `gorm:"type:text" json:"sourceUrl" form:"sourceUrl"`                     // 原文链接
-	Ip           string                `gorm:"size:128" json:"ip" form:"ip"`                                    // IP
-	ViewCount    int64                 `gorm:"not null;" json:"viewCount" form:"viewCount"`                     // 查看数量
-	CommentCount int64                 `gorm:"default:0" json:"commentCount" form:"commentCount"`               // 评论数量
-	LikeCount    int64                 `gorm:"default:0" json:"likeCount" form:"likeCount"`                     // 点赞数量
-	CreateTime   int64                 `json:"createTime" form:"createTime"`                                    // 创建时间
-	UpdateTime   int64                 `json:"updateTime" form:"updateTime"`                                    // 更新时间
+	UserId        int64                 `gorm:"index:idx_article_user_id" json:"userId" form:"userId"`                                // 所属用户编号
+	CategoryId    int64                 `gorm:"not null;default:0;index:idx_article_category_id" json:"categoryId" form:"categoryId"` // 所属栏目
+	Title         string                `gorm:"size:128;not null;" json:"title" form:"title"`                                         // 标题
+	Summary       string                `gorm:"type:text" json:"summary" form:"summary"`                                              // 摘要
+	Content       string                `gorm:";not null;" json:"content" form:"content"`                                             // 内容
+	ContentType   constants.ContentType `gorm:"type:varchar(32);not null" json:"contentType" form:"contentType"`                      // 内容类型：markdown、html
+	Cover         string                `gorm:"type:text;" json:"cover" form:"cover"`                                                 // 封面图
+	Status        int                   `gorm:"type:int;index:idx_article_status" json:"status" form:"status"`                        // 状态
+	SourceUrl     string                `gorm:"type:text" json:"sourceUrl" form:"sourceUrl"`                                          // 原文链接
+	Ip            string                `gorm:"size:128" json:"ip" form:"ip"`                                                         // IP
+	ViewCount     int64                 `gorm:"not null;" json:"viewCount" form:"viewCount"`                                          // 查看数量
+	CommentCount  int64                 `gorm:"default:0" json:"commentCount" form:"commentCount"`                                    // 评论数量
+	LikeCount     int64                 `gorm:"default:0" json:"likeCount" form:"likeCount"`                                          // 点赞数量
+	AllowComments bool                  `gorm:"not null;default:false" json:"allowComments" form:"allowComments"`                     // 是否允许新增评论和回复
+	CreateTime    int64                 `json:"createTime" form:"createTime"`                                                         // 创建时间
+	UpdateTime    int64                 `json:"updateTime" form:"updateTime"`                                                         // 更新时间
 }
 
 // 文章标签
@@ -250,14 +252,17 @@ type Favorite struct {
 // Category 话题节点（支持一级 parent_id=0 / 二级 parent_id>0）
 type Category struct {
 	Model
-	ParentId    int64                  `gorm:"not null;default:0;index:idx_category_parent_id" json:"parentId" form:"parentId"` // 父节点ID，0=一级
-	Name        string                 `gorm:"size:32;unique" json:"name" form:"name"`                                          // 名称（一级全局唯一；二级同父下唯一，应用层校验）
-	Type        constants.CategoryType `gorm:"size:16;not null;default:normal;index:idx_category_type" json:"type" form:"type"` // 节点类型：normal/qa
-	Description string                 `gorm:"size:1024" json:"description" form:"description"`                                 // 描述
-	Logo        string                 `gorm:"size:1024" json:"logo" form:"logo"`                                               // 图标
-	SortNo      int                    `gorm:"type:int;index:idx_category_sort_no" json:"sortNo" form:"sortNo"`                 // 排序编号
-	Status      int                    `gorm:"type:int;not null" json:"status" form:"status"`                                   // 状态
-	CreateTime  int64                  `json:"createTime" form:"createTime"`                                                    // 创建时间
+	ParentId        int64                  `gorm:"not null;default:0;index:idx_category_parent_id" json:"parentId" form:"parentId"` // 父节点ID，0=一级
+	Name            string                 `gorm:"size:32;unique" json:"name" form:"name"`                                          // 名称（一级全局唯一；二级同父下唯一，应用层校验）
+	UrlPath         string                 `gorm:"size:255;uniqueIndex:uk_category_url_path" json:"urlPath" form:"urlPath"`         // 手动配置的栏目 URL
+	PreviousUrlPath string                 `gorm:"size:255;index:idx_category_previous_url_path" json:"-" form:"-"`                 // 上一个栏目 URL
+	AllowPost       bool                   `gorm:"not null;default:false" json:"allowPost" form:"allowPost"`                        // 是否允许直接发布文章
+	Type            constants.CategoryType `gorm:"size:16;not null;default:normal;index:idx_category_type" json:"type" form:"type"` // 节点类型：normal/qa
+	Description     string                 `gorm:"size:1024" json:"description" form:"description"`                                 // 描述
+	Logo            string                 `gorm:"size:1024" json:"logo" form:"logo"`                                               // 图标
+	SortNo          int                    `gorm:"type:int;index:idx_category_sort_no" json:"sortNo" form:"sortNo"`                 // 排序编号
+	Status          int                    `gorm:"type:int;not null" json:"status" form:"status"`                                   // 状态
+	CreateTime      int64                  `json:"createTime" form:"createTime"`                                                    // 创建时间
 }
 
 // 话题节点

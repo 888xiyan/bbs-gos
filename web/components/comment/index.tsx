@@ -229,10 +229,12 @@ function CommentSubList({
   commentId,
   data,
   onReply,
+  allowNewComments,
 }: {
   commentId: number
   data: PageData<Comment>
   onReply: (comment: Comment) => void
+  allowNewComments: boolean
 }) {
   const { t, currentUser, catchError, msgSignIn } = useCommentActions()
   const [replies, setReplies] = React.useState(data)
@@ -461,21 +463,23 @@ function CommentSubList({
                     <span>{comment.likeCount}</span>
                   ) : null}
                 </button>
-                <button
-                  type="button"
-                  className={cn(
-                    "flex items-center gap-1 text-xs text-muted-foreground select-none hover:text-primary",
-                    replyQuoteId === comment.id && "font-medium text-primary"
-                  )}
-                  onClick={() => switchShowReply(comment)}
-                >
-                  <MessageCircle className="h-3 w-3" />
-                  <span>
-                    {replyQuoteId === comment.id
-                      ? t("component.comment.subList.cancelReply")
-                      : t("component.comment.subList.reply")}
-                  </span>
-                </button>
+                {allowNewComments ? (
+                  <button
+                    type="button"
+                    className={cn(
+                      "flex items-center gap-1 text-xs text-muted-foreground select-none hover:text-primary",
+                      replyQuoteId === comment.id && "font-medium text-primary"
+                    )}
+                    onClick={() => switchShowReply(comment)}
+                  >
+                    <MessageCircle className="h-3 w-3" />
+                    <span>
+                      {replyQuoteId === comment.id
+                        ? t("component.comment.subList.cancelReply")
+                        : t("component.comment.subList.reply")}
+                    </span>
+                  </button>
+                ) : null}
                 {currentUser?.id === comment.user.id ||
                 userHasPermission(
                   currentUser,
@@ -501,7 +505,7 @@ function CommentSubList({
                   </button>
                 ) : null}
               </div>
-              {replyQuoteId === comment.id ? (
+              {allowNewComments && replyQuoteId === comment.id ? (
                 <div className="mt-2.5">
                   <InlineReplyEditor
                     value={replyValue}
@@ -549,6 +553,7 @@ function CommentItem({
   comment,
   acceptedCommentId,
   allowAcceptAnswer,
+  allowNewComments,
   entityType,
   entityId,
   onChanged,
@@ -557,6 +562,7 @@ function CommentItem({
   comment: Comment
   acceptedCommentId: number
   allowAcceptAnswer: boolean
+  allowNewComments: boolean
   entityType: EntityType
   entityId: EntityId
   onChanged: (comment: Comment) => void
@@ -761,21 +767,23 @@ function CommentItem({
                 <span>{comment.likeCount}</span>
               ) : null}
             </button>
-            <button
-              type="button"
-              className={cn(
-                "flex items-center gap-1 text-[13px] text-muted-foreground select-none hover:text-primary",
-                replyCommentId === comment.id && "font-medium text-primary"
-              )}
-              onClick={switchShowReply}
-            >
-              <MessageCircle className="h-3.5 w-3.5" />
-              <span>
-                {replyCommentId === comment.id
-                  ? t("component.comment.list.cancelReply")
-                  : t("component.comment.list.reply")}
-              </span>
-            </button>
+            {allowNewComments ? (
+              <button
+                type="button"
+                className={cn(
+                  "flex items-center gap-1 text-[13px] text-muted-foreground select-none hover:text-primary",
+                  replyCommentId === comment.id && "font-medium text-primary"
+                )}
+                onClick={switchShowReply}
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                <span>
+                  {replyCommentId === comment.id
+                    ? t("component.comment.list.cancelReply")
+                    : t("component.comment.list.reply")}
+                </span>
+              </button>
+            ) : null}
             {allowAcceptAnswer && entityType === "topic" ? (
               <button
                 type="button"
@@ -812,7 +820,7 @@ function CommentItem({
               </button>
             ) : null}
           </div>
-          {replyCommentId === comment.id ? (
+          {allowNewComments && replyCommentId === comment.id ? (
             <div className="mt-2.5">
               <InlineReplyEditor
                 value={replyValue}
@@ -826,6 +834,7 @@ function CommentItem({
               key={`${comment.id}-${comment.replies.results.length}-${comment.replies.cursor || ""}`}
               commentId={comment.id}
               data={comment.replies}
+              allowNewComments={allowNewComments}
               onReply={(reply) => onChanged(appendReply(comment, reply))}
             />
           ) : null}
@@ -875,6 +884,8 @@ export function CommentSection({
   title,
   acceptedCommentId = 0,
   allowAcceptAnswer = false,
+  allowNewComments = true,
+  contextLabel,
   initialData,
   onCreated,
 }: {
@@ -884,6 +895,8 @@ export function CommentSection({
   title?: string
   acceptedCommentId?: number
   allowAcceptAnswer?: boolean
+  allowNewComments?: boolean
+  contextLabel?: string
   initialData?: PageData<Comment>
   onCreated?: (comment: Comment) => void
 }) {
@@ -972,13 +985,18 @@ export function CommentSection({
   return (
     <section id="JComment" className="rounded-lg bg-background p-4">
       <div className="flex text-base font-medium text-foreground">
+        {contextLabel ? (
+          <span className="mr-3 text-sm text-muted-foreground">
+            {contextLabel}
+          </span>
+        ) : null}
         <span>{title || t("component.comment.title")}</span>
         {commentCount && commentCount > 0 ? (
           <span>&nbsp;{commentCount}</span>
         ) : null}
       </div>
 
-      {currentUser ? (
+      {!allowNewComments ? null : currentUser ? (
         isNeedEmailVerify ? (
           <div className="relative my-2.5 box-border overflow-hidden rounded-[3px] border border-border p-2.5">
             <div className="rounded-[3px] px-2.5 text-muted-foreground">
@@ -1023,6 +1041,7 @@ export function CommentSection({
               comment={comment}
               acceptedCommentId={currentAcceptedCommentId}
               allowAcceptAnswer={allowAcceptAnswer}
+              allowNewComments={allowNewComments}
               entityType={entityType}
               entityId={entityId}
               onChanged={updateComment}

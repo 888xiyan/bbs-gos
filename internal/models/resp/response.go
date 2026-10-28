@@ -97,19 +97,21 @@ type TagResponse struct {
 }
 
 type ArticleSimpleResponse struct {
-	Id           int64          `json:"id"`
-	User         *UserInfo      `json:"user"`
-	Tags         *[]TagResponse `json:"tags"`
-	Title        string         `json:"title"`
-	Summary      string         `json:"summary"`
-	Cover        *ImageInfo     `json:"cover"`
-	SourceUrl    string         `json:"sourceUrl"`
-	ViewCount    int64          `json:"viewCount"`
-	CommentCount int64          `json:"commentCount"`
-	LikeCount    int64          `json:"likeCount"`
-	CreateTime   int64          `json:"createTime"`
-	Status       int            `json:"status"`
-	Favorited    bool           `json:"favorited"`
+	Id            int64             `json:"id"`
+	User          *UserInfo         `json:"user"`
+	Category      *CategoryResponse `json:"category"`
+	Tags          *[]TagResponse    `json:"tags"`
+	Title         string            `json:"title"`
+	Summary       string            `json:"summary"`
+	Cover         *ImageInfo        `json:"cover"`
+	SourceUrl     string            `json:"sourceUrl"`
+	ViewCount     int64             `json:"viewCount"`
+	CommentCount  int64             `json:"commentCount"`
+	LikeCount     int64             `json:"likeCount"`
+	CreateTime    int64             `json:"createTime"`
+	Status        int               `json:"status"`
+	Favorited     bool              `json:"favorited"`
+	AllowComments bool              `json:"allowComments"`
 }
 
 type ArticleResponse struct {
@@ -122,9 +124,12 @@ type CategoryResponse struct {
 	Id          int64                  `json:"id"`
 	ParentId    int64                  `json:"parentId"` // 父节点ID，0=一级
 	Name        string                 `json:"name"`
+	Path        string                 `json:"path"`
 	Type        constants.CategoryType `json:"type"`
 	Logo        string                 `json:"logo"`
 	Description string                 `json:"description"`
+	UrlPath     string                 `json:"urlPath"`
+	AllowPost   bool                   `json:"allowPost"`
 	Children    []CategoryResponse     `json:"children,omitempty"` // 子节点（发帖可选时用）
 }
 
@@ -133,9 +138,12 @@ type CategoryTreeItem struct {
 	Id          int64                  `json:"id"`
 	ParentId    int64                  `json:"parentId"`
 	Name        string                 `json:"name"`
+	Path        string                 `json:"path"`
 	Type        constants.CategoryType `json:"type"`
 	Logo        string                 `json:"logo"`
 	Description string                 `json:"description"`
+	UrlPath     string                 `json:"urlPath"`
+	AllowPost   bool                   `json:"allowPost"`
 	SortNo      int                    `json:"sortNo"`
 	Status      int                    `json:"status"`
 	CreateTime  int64                  `json:"createTime"`

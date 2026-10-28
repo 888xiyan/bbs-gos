@@ -18,8 +18,8 @@ import type { Category } from "@/lib/api/types"
 import { useI18n } from "@/lib/i18n/provider"
 import { cn } from "@/lib/utils"
 
-function nodeHref(node: Category) {
-  return `/topics/category/${node.id}`
+function nodeHref(node: Category, basePath: string) {
+  return `${basePath}/${node.id}`
 }
 
 function isActiveNode(
@@ -34,10 +34,14 @@ export function TopicsNavContent({
   initialCategories,
   currentCategoryId,
   currentRootCategoryId,
+  basePath = "/topics/category",
+  allHref = "/topics",
 }: {
   initialCategories: Category[]
   currentCategoryId?: number
   currentRootCategoryId?: number
+  basePath?: string
+  allHref?: string
 }) {
   const { t } = useI18n()
   const [categories, setCategories] = React.useState(initialCategories)
@@ -98,7 +102,7 @@ export function TopicsNavContent({
           )}
           data-node-id="all"
         >
-          <Link href="/topics">
+          <Link href={allHref}>
             <LayoutGridIcon
               className="node-logo node-logo-icon"
               aria-hidden="true"
@@ -119,7 +123,7 @@ export function TopicsNavContent({
           return (
             <React.Fragment key={node.id}>
               <li className={cn(active && "active")} data-node-id={node.id}>
-                <Link href={nodeHref(node)}>
+                <Link href={nodeHref(node, basePath)}>
                   <i
                     className="node-logo"
                     style={
@@ -171,7 +175,7 @@ export function TopicsNavContent({
               <div className="topics-mobile-category-list">
                 <DrawerClose asChild>
                   <Link
-                    href="/topics"
+                    href={allHref}
                     className={cn(
                       "topics-mobile-category-item",
                       currentCategoryId !== undefined &&
@@ -193,7 +197,7 @@ export function TopicsNavContent({
                   return (
                     <DrawerClose key={`mobile-${node.id}`} asChild>
                       <Link
-                        href={nodeHref(node)}
+                        href={nodeHref(node, basePath)}
                         className={cn(
                           "topics-mobile-category-item",
                           active && "active"

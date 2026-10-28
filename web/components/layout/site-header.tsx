@@ -133,6 +133,28 @@ function moduleItems(config: SiteConfig | null, t: TFunction) {
   return items
 }
 
+function visibleNavs(navs: SiteNav[], config: SiteConfig | null): SiteNav[] {
+  return navs
+    .map((nav) => ({
+      ...nav,
+      children: nav.children ? visibleNavs(nav.children, config) : undefined,
+    }))
+    .filter((nav) => {
+      if (nav.children && nav.children.length === 0) {
+        return false
+      }
+      const path = nav.url.split("?")[0]
+      const topicModuleEnabled =
+        config?.modules?.topic || config?.modules?.qa || config?.modules?.tweet
+      return !(
+        !topicModuleEnabled &&
+        (path === "/topics" ||
+          path.startsWith("/topics/") ||
+          path.startsWith("/topic/"))
+      )
+    })
+}
+
 function CreateTopicButton({
   config,
   t,
@@ -594,7 +616,7 @@ export function SiteHeader() {
   const unreadMessageCount = useUnreadMessageCount()
   const { t } = useI18n()
   const fullPath = useCurrentFullPath()
-  const navs = config?.siteNavs ?? []
+  const navs = visibleNavs(config?.siteNavs ?? [], config)
   const title = config?.siteTitle || "BBS-GO"
   const logo = config?.siteLogo
   const showColorModeToggle = true

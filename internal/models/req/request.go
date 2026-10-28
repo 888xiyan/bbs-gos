@@ -59,14 +59,16 @@ type EditTopicReq struct {
 }
 
 type CreateArticleReq struct {
-	Title       string                `json:"title" form:"title"`
-	Summary     string                `json:"summary" form:"summary"`
-	Content     string                `json:"content" form:"content"`
-	ContentType constants.ContentType `json:"contentType" form:"contentType"`
-	Cover       *ImageDTO             `json:"cover" form:"cover"`
-	Tags        []string              `json:"tags" form:"tags"`
-	SourceUrl   string                `json:"sourceUrl" form:"sourceUrl"`
-	Ip          string                `json:"ip" form:"ip"`
+	Title         string                `json:"title" form:"title"`
+	CategoryId    int64                 `json:"categoryId" form:"categoryId"`
+	Summary       string                `json:"summary" form:"summary"`
+	Content       string                `json:"content" form:"content"`
+	ContentType   constants.ContentType `json:"contentType" form:"contentType"`
+	Cover         *ImageDTO             `json:"cover" form:"cover"`
+	Tags          []string              `json:"tags" form:"tags"`
+	SourceUrl     string                `json:"sourceUrl" form:"sourceUrl"`
+	Ip            string                `json:"ip" form:"ip"`
+	AllowComments bool                  `json:"allowComments" form:"allowComments"`
 }
 
 type ImageDTO struct {
@@ -222,11 +224,13 @@ func (r UserForbiddenReq) DecodedUserId() int64 {
 }
 
 type ArticleReq struct {
-	Title   string `json:"title" form:"title"`
-	Summary string `json:"summary" form:"summary"`
-	Content string `json:"content" form:"content"`
-	Cover   string `json:"cover" form:"cover"`
-	Tags    string `json:"tags" form:"tags"`
+	Title         string `json:"title" form:"title"`
+	CategoryId    int64  `json:"categoryId" form:"categoryId"`
+	Summary       string `json:"summary" form:"summary"`
+	Content       string `json:"content" form:"content"`
+	Cover         string `json:"cover" form:"cover"`
+	Tags          string `json:"tags" form:"tags"`
+	AllowComments *bool  `json:"allowComments" form:"allowComments"`
 }
 
 func (r ArticleReq) ParsedTags() []string {

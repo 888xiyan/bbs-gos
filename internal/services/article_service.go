@@ -103,9 +103,12 @@ func (s *articleService) GetArticleTags(articleId int64) []models.Tag {
 }
 
 // 文章列表
-func (s *articleService) GetArticles(cursor int64) (articles []models.Article, nextCursor int64, hasMore bool) {
+func (s *articleService) GetArticles(cursor int64, categoryIds ...int64) (articles []models.Article, nextCursor int64, hasMore bool) {
 	limit := 20
 	cnd := sqls.NewCnd().Eq("status", constants.StatusOk).Desc("id").Limit(limit)
+	if len(categoryIds) > 0 {
+		cnd.In("category_id", categoryIds)
+	}
 	if cursor > 0 {
 		cnd.Lt("id", cursor)
 	}
@@ -157,6 +160,10 @@ func (s *articleService) Publish(userId int64, form req.CreateArticleReq) (artic
 	if strs.IsBlank(form.Content) {
 		return nil, errors.New(locales.Get("article.content_required"))
 	}
+	category, err := CategoryService.ValidateForArticle(form.CategoryId)
+	if err != nil {
+		return nil, err
+	}
 
 	// 获取后台配置 否是开启发表文章审核
 	status := constants.StatusOk
@@ -165,16 +172,18 @@ func (s *articleService) Publish(userId int64, form req.CreateArticleReq) (artic
 	}
 
 	article = &models.Article{
-		UserId:      userId,
-		Title:       form.Title,
-		Summary:     form.Summary,
-		Content:     form.Content,
-		ContentType: form.ContentType,
-		Status:      status,
-		SourceUrl:   form.SourceUrl,
-		Ip:          form.Ip,
-		CreateTime:  dates.NowTimestamp(),
-		UpdateTime:  dates.NowTimestamp(),
+		UserId:        userId,
+		CategoryId:    category.Id,
+		Title:         form.Title,
+		Summary:       form.Summary,
+		Content:       form.Content,
+		ContentType:   form.ContentType,
+		Status:        status,
+		SourceUrl:     form.SourceUrl,
+		Ip:            form.Ip,
+		CreateTime:    dates.NowTimestamp(),
+		UpdateTime:    dates.NowTimestamp(),
+		AllowComments: form.AllowComments,
 	}
 
 	if form.Cover != nil {
@@ -207,21 +216,30 @@ func (s *articleService) Publish(userId int64, form req.CreateArticleReq) (artic
 }
 
 // 修改文章
-func (s *articleService) Edit(articleId int64, tags []string, title, content string, cover *req.ImageDTO) error {
+func (s *articleService) Edit(articleId int64, form req.CreateArticleReq) error {
+	title := strings.TrimSpace(form.Title)
+	content := strings.TrimSpace(form.Content)
 	if len(title) == 0 {
 		return errors.New(locales.Get("article.title_required"))
 	}
 	if len(content) == 0 {
 		return errors.New(locales.Get("article.content_required"))
 	}
+	category, err := CategoryService.ValidateForArticle(form.CategoryId)
+	if err != nil {
+		return err
+	}
 
-	err := sqls.DB().Transaction(func(tx *gorm.DB) error {
+	err = sqls.DB().Transaction(func(tx *gorm.DB) error {
 		updates := map[string]any{
-			"title":   title,
-			"content": content,
+			"title":          title,
+			"summary":        strings.TrimSpace(form.Summary),
+			"content":        content,
+			"category_id":    category.Id,
+			"allow_comments": form.AllowComments,
 		}
-		if cover != nil {
-			updates["cover"] = jsons.ToJsonStr(cover)
+		if form.Cover != nil {
+			updates["cover"] = jsons.ToJsonStr(form.Cover)
 		} else {
 			updates["cover"] = ""
 		}
@@ -229,7 +247,7 @@ func (s *articleService) Edit(articleId int64, tags []string, title, content str
 		if err != nil {
 			return err
 		}
-		tagIds, _ := repositories.TagRepository.GetOrCreates(tx, tags)          // 创建文章对应标签
+		tagIds, _ := repositories.TagRepository.GetOrCreates(tx, form.Tags)     // 创建文章对应标签
 		repositories.ArticleTagRepository.DeleteArticleTags(tx, articleId)      // 先删掉所有的标签
 		repositories.ArticleTagRepository.AddArticleTags(tx, articleId, tagIds) // 然后重新添加标签
 		return nil
@@ -280,6 +298,14 @@ func (s *articleService) ScanByUser(userId int64, callback func(articles []model
 // 浏览数+1
 func (s *articleService) IncrViewCount(articleId int64) {
 	sqls.DB().Exec("update t_article set view_count = view_count + 1 where id = ?", articleId)
+}
+
+func (s *articleService) onComment(tx *gorm.DB, articleId int64, _ *models.Comment) error {
+	return repositories.ArticleRepository.UpdateColumn(tx, articleId, "comment_count", gorm.Expr("comment_count + 1"))
+}
+
+func (s *articleService) decrCommentCount(tx *gorm.DB, articleId int64) error {
+	return repositories.ArticleRepository.UpdateColumn(tx, articleId, "comment_count", gorm.Expr("CASE WHEN comment_count > 0 THEN comment_count - 1 ELSE 0 END"))
 }
 
 func (s *articleService) GetUserArticles(userId, cursor int64) (articles []models.Article, nextCursor int64, hasMore bool) {

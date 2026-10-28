@@ -19,9 +19,12 @@ func BuildCategory(category *models.Category) *resp.CategoryResponse {
 		Id:          category.Id,
 		ParentId:    category.ParentId,
 		Name:        category.Name,
+		Path:        services.CategoryService.GetPath(category.Id),
 		Type:        category.Type,
 		Logo:        category.Logo,
 		Description: category.Description,
+		UrlPath:     category.UrlPath,
+		AllowPost:   category.AllowPost,
 	}
 }
 
@@ -30,11 +33,9 @@ func BuildCategoryWithChildren(category *models.Category) *resp.CategoryResponse
 	if r == nil {
 		return nil
 	}
-	if category.ParentId == 0 {
-		children := services.CategoryService.GetChildren(category.Id)
-		if len(children) > 0 {
-			r.Children = BuildCategoryResponses(children)
-		}
+	children := BuildCategoryResponseTree(category.Id, services.CategoryService.GetCategories())
+	if len(children) > 0 {
+		r.Children = children
 	}
 	return r
 }
@@ -82,9 +83,12 @@ func BuildCategoryTree(parentId int64, list []models.Category) []resp.CategoryTr
 				Id:          category.Id,
 				ParentId:    category.ParentId,
 				Name:        category.Name,
+				Path:        services.CategoryService.GetPath(category.Id),
 				Type:        category.Type,
 				Logo:        logo,
 				Description: category.Description,
+				UrlPath:     category.UrlPath,
+				AllowPost:   category.AllowPost,
 				SortNo:      category.SortNo,
 				Status:      category.Status,
 				CreateTime:  category.CreateTime,

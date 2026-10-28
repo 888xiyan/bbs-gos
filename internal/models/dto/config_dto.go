@@ -41,6 +41,7 @@ type SysConfigAdminResponse struct {
 	AttachmentConfig           AttachmentConfig            `json:"attachmentConfig"`           // 附件配置
 	ScriptInjections           []ScriptInjection           `json:"scriptInjections"`           // head脚本注入
 	InviteCodeConfig           InviteCodeConfig            `json:"inviteCodeConfig"`           // 邀请码注册配置
+	CommentsEnabled            bool                        `json:"commentsEnabled"`            // 是否允许全站评论
 }
 
 // SysConfigOpenResponse
@@ -78,6 +79,7 @@ type SysConfigOpenResponse struct {
 	LoginConfig                OpenLoginConfig   `json:"loginConfig"`                // 登录配置
 	ScriptInjections           []ScriptInjection `json:"scriptInjections"`           // head脚本注入
 	InviteCodeRequired         bool              `json:"inviteCodeRequired"`         // 注册是否必须填写邀请码
+	CommentsEnabled            bool              `json:"commentsEnabled"`            // 是否允许全站评论
 }
 
 // InviteCodeConfig 邀请码注册配置（单 Key 存 JSON）

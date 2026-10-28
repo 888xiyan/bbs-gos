@@ -2,8 +2,11 @@ import { useI18n } from "@/lib/i18n/provider"
 import { localizedTitle, rootDataFromMatches, sitePageMeta } from "@/lib/seo"
 
 import { TopicListRoute } from "./_index"
+import { loadTopicListRouteData } from "../route-helpers/loaders"
 
-export { clientLoader } from "./_index"
+export async function clientLoader() {
+  return loadTopicListRouteData()
+}
 export { loader } from "../route-helpers/loaders"
 
 export function meta({

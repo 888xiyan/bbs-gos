@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -89,6 +90,9 @@ func setupTopicHandlerCategoryTestDB(t *testing.T) *gorm.DB {
 
 func mustCreateTopicHandlerCategory(t *testing.T, db *gorm.DB, category *models.Category) {
 	t.Helper()
+	if category.UrlPath == "" {
+		category.UrlPath = "/test-" + strings.ReplaceAll(category.Name, " ", "-")
+	}
 
 	if err := db.Create(category).Error; err != nil {
 		t.Fatalf("create category: %v", err)

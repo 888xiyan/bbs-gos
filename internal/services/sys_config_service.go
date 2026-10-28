@@ -298,6 +298,14 @@ func (s *sysConfigService) IsInviteCodeRequired() bool {
 	return s.GetInviteCodeConfig().Enabled
 }
 
+func (s *sysConfigService) IsCommentsEnabled() bool {
+	config := repositories.SysConfigRepository.GetByKey(sqls.DB(), constants.SysConfigCommentsEnabled)
+	if config == nil {
+		return true
+	}
+	return strings.TrimSpace(strings.ToLower(config.Value)) != "false"
+}
+
 // GetAntiAbuseConfigTx reads through the active write transaction. This avoids
 // a second SQLite connection attempting to load a just-invalidated cached
 // setting while content publishing holds the transaction open.

@@ -231,6 +231,7 @@ const enUS = {
       normal: "Topic",
       qa: "Q&A",
     },
+    categoryTopLevel: "Top-level category",
     forbiddenWordTypes: {
       word: "Word",
       regex: "Regex",
@@ -542,6 +543,9 @@ const enUS = {
         inviteCodeLockoutMinutes: "Lockout (minutes)",
         inviteCodeLockoutMinutesTooltip:
           "Temporary lockout duration after reaching the failure limit.",
+        commentsEnabled: "Enable comments",
+        commentsEnabledTooltip:
+          "Allow users to create article comments and replies.",
         frequencyTitle: "Publish Frequency Limits",
         userRateLimit: "User Limits",
         ipRateLimit: "IP Limits",
@@ -776,6 +780,8 @@ const enUS = {
       node: "Category",
       category: "Category",
       name: "Name",
+      urlPath: "URL Path",
+      allowPost: "Allow Publishing",
       parentId: "Parent Category",
       logo: "Logo",
       sortNo: "Sort order",
@@ -1501,6 +1507,7 @@ const enUS = {
       detail: {
         pending: "This article is pending review.",
         publishedAt: "Published",
+        category: "Category",
       },
       create: {
         needEmailTitle: "Please verify your email first",
@@ -1512,6 +1519,10 @@ const enUS = {
         contentPlaceholder: "Write your article...",
         tagsPlaceholder: "Add tags",
         cover: "Cover",
+        categoryPlaceholder: "Choose a category",
+        categoryRequired: "Choose a category",
+        allowComments: "Allow comments",
+        allowCommentsHelp: "Readers can comment and reply when enabled.",
         publishBtn: "Publish",
         publishing: "Publishing...",
         success: "Article submitted",

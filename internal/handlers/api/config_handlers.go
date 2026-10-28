@@ -60,6 +60,7 @@ func ConfigConfigs(ctx *gin.Context) {
 			},
 			ScriptInjections:   services.SysConfigService.GetScriptInjections(),
 			InviteCodeRequired: services.SysConfigService.IsInviteCodeRequired(),
+			CommentsEnabled:    services.SysConfigService.IsCommentsEnabled(),
 		}
 		for _, provider := range loginConfig.OIDCProviders {
 			if provider.Enabled {

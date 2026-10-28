@@ -60,10 +60,13 @@ export interface ImageInfo {
 export interface Category {
   id: number
   name: string
+  path?: string
   type?: "normal" | "qa" | string
   description?: string
   logo?: string
   parentId?: number
+  urlPath?: string
+  allowPost?: boolean
   children?: Category[]
 }
 
@@ -200,6 +203,7 @@ export interface SiteConfig {
   }
   createArticleEmailVerified?: boolean
   createCommentEmailVerified?: boolean
+  commentsEnabled?: boolean
   inviteCodeRequired?: boolean
   footerLinks?: Array<{
     text?: Record<string, string>
@@ -238,9 +242,11 @@ export interface ArticleEditForm {
   id: number
   articleId: number
   title: string
+  categoryId: number
   content: string
   tags?: string[]
   cover?: ImageInfo | null
+  allowComments: boolean
 }
 
 export interface TaskGroupInfo {
@@ -296,6 +302,7 @@ export interface LoginResult {
 export interface Article {
   id: number
   user: UserSummary
+  category?: Category | null
   tags?: Tag[]
   title: string
   content?: string
@@ -308,6 +315,7 @@ export interface Article {
   createTime?: number
   status?: number
   favorited?: boolean
+  allowComments?: boolean
   toc?: TopicTocItem[]
 }
 

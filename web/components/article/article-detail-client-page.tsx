@@ -126,6 +126,11 @@ export function ArticleDetailClientPage({
               {article.createTime ? (
                 <span>{prettyDate(article.createTime, t)}</span>
               ) : null}
+              {article.category ? (
+                <Link href={`/articles/category/${article.category.id}`}>
+                  {article.category.path || article.category.name}
+                </Link>
+              ) : null}
             </div>
           </header>
           <HtmlImagePreview
@@ -136,6 +141,14 @@ export function ArticleDetailClientPage({
         <ArticleComments
           entityId={article.id}
           commentCount={article.commentCount}
+          allowComments={article.allowComments !== false}
+          categoryPath={
+            article.category
+              ? `${t("pages.article.detail.category")}: ${
+                  article.category.path || article.category.name
+                }`
+              : undefined
+          }
           initialComments={comments}
           currentUser={currentUser}
           config={config}

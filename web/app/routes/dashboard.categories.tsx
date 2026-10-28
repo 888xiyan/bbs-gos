@@ -56,6 +56,7 @@ export default function DashboardCategoriesRoute() {
     columns: [
       { key: "id", label: dashboardData.label(t, "id") },
       { key: "name", label: dashboardData.label(t, "name") },
+      { key: "urlPath", label: dashboardData.label(t, "urlPath") },
       {
         key: "type",
         label: dashboardData.label(t, "type"),
@@ -77,6 +78,14 @@ export default function DashboardCategoriesRoute() {
       },
       { key: "sortNo", label: dashboardData.label(t, "sortNo") },
       {
+        key: "allowPost",
+        label: dashboardData.label(t, "allowPost"),
+        render: (record) =>
+          record.allowPost === false
+            ? t("dashboard.boolean.no")
+            : t("dashboard.boolean.yes"),
+      },
+      {
         key: "status",
         label: dashboardData.label(t, "status"),
         render: (record) => dashboardData.statusCell(t, record.status),
@@ -93,10 +102,15 @@ export default function DashboardCategoriesRoute() {
         name: "parentId",
         label: dashboardData.label(t, "parentId"),
         type: "select",
+        emptyLabel: t("dashboard.categoryTopLevel"),
         colSpan: 2,
         optionsEndpoint: "/api/admin/category/options",
         optionLabel: dashboardData.treeOptionLabel,
         optionValue: (record) => record.id as number,
+        valueFromRecord: (record) =>
+          Number(record.parentId || 0) > 0
+            ? Number(record.parentId)
+            : undefined,
       },
       {
         name: "type",
@@ -106,6 +120,20 @@ export default function DashboardCategoriesRoute() {
         options: dashboardData.categoryTypeOptionsFor(t),
       },
       { name: "name", label: dashboardData.label(t, "name"), required: true },
+      {
+        name: "urlPath",
+        label: dashboardData.label(t, "urlPath"),
+        required: true,
+        colSpan: 2,
+      },
+      {
+        name: "allowPost",
+        label: dashboardData.label(t, "allowPost"),
+        type: "select",
+        required: true,
+        defaultValue: "true",
+        options: dashboardData.booleanOptionsFor(t),
+      },
       {
         name: "description",
         label: dashboardData.label(t, "description"),

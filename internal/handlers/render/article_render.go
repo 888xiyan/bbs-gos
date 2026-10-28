@@ -22,14 +22,20 @@ func BuildArticle(article *models.Article, currentUser *models.User) *resp.Artic
 	rsp.Summary = article.Summary
 	rsp.SourceUrl = article.SourceUrl
 	rsp.ViewCount = article.ViewCount
+	rsp.CommentCount = article.CommentCount
+	rsp.LikeCount = article.LikeCount
 	rsp.CreateTime = article.CreateTime
 	rsp.Status = article.Status
+	rsp.AllowComments = article.AllowComments
 
 	rsp.User = BuildUserInfoDefaultIfNull(article.UserId)
 
 	tagIds := cache.ArticleTagCache.Get(article.Id)
 	tags := cache.TagCache.GetList(tagIds)
 	rsp.Tags = BuildTags(tags)
+	if category := services.CategoryService.Get(article.CategoryId); category != nil {
+		rsp.Category = BuildCategory(category)
+	}
 
 	if article.ContentType == constants.ContentTypeMarkdown {
 		content := markdown.ToHTML(article.Content)
@@ -62,12 +68,16 @@ func BuildSimpleArticle(article *models.Article) *resp.ArticleSimpleResponse {
 	rsp.LikeCount = article.LikeCount
 	rsp.CreateTime = article.CreateTime
 	rsp.Status = article.Status
+	rsp.AllowComments = article.AllowComments
 
 	rsp.User = BuildUserInfoDefaultIfNull(article.UserId)
 
 	tagIds := cache.ArticleTagCache.Get(article.Id)
 	tags := cache.TagCache.GetList(tagIds)
 	rsp.Tags = BuildTags(tags)
+	if category := services.CategoryService.Get(article.CategoryId); category != nil {
+		rsp.Category = BuildCategory(category)
+	}
 
 	if article.ContentType == constants.ContentTypeMarkdown {
 		if len(rsp.Summary) == 0 {

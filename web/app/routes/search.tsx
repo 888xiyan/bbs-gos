@@ -38,14 +38,16 @@ type MetaLocation = {
   search?: string
 }
 
-const searchTypes: SearchType[] = ["topic", "article", "user"]
+const searchTypes: SearchType[] = ["article", "user"]
 
 function flattenSearchNodes(
   categories: Category[] = [],
   prefix = ""
 ): SearchNodeOption[] {
   return categories.flatMap((category) => {
-    const label = prefix ? `${prefix} / ${category.name}` : category.name || String(category.id)
+    const label = prefix
+      ? `${prefix} / ${category.name}`
+      : category.name || String(category.id)
     return [
       { id: Number(category.id), label },
       ...flattenSearchNodes(category.children || [], label),
@@ -56,7 +58,7 @@ function flattenSearchNodes(
 function normalizeSearchType(value: string | null): SearchType {
   return searchTypes.includes(value as SearchType)
     ? (value as SearchType)
-    : "topic"
+    : "article"
 }
 
 export function meta({
@@ -87,8 +89,9 @@ export default function SearchRoute() {
   const timeRange = Number(searchParams.get("timeRange") || 0)
   const type = normalizeSearchType(searchParams.get("type"))
   const [searchKeyword, setSearchKeyword] = React.useState(keyword)
-  const { data: categories } = useClientData<Category[]>("search:categories", () =>
-    apiFetch<Category[]>("/api/topic/categories").catch(() => [])
+  const { data: categories } = useClientData<Category[]>(
+    "search:categories",
+    () => apiFetch<Category[]>("/api/topic/categories").catch(() => [])
   )
 
   React.useEffect(() => {
@@ -157,7 +160,9 @@ export default function SearchRoute() {
                 placeholder={t("pages.search.placeholder")}
                 className="h-auto border-none bg-transparent px-0 text-base shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-sm"
                 autoComplete="off"
-                onChange={(event) => setSearchKeyword(event.currentTarget.value)}
+                onChange={(event) =>
+                  setSearchKeyword(event.currentTarget.value)
+                }
               />
             </div>
             <Button type="submit" className="h-11 rounded-lg px-6 sm:min-w-24">
@@ -173,13 +178,17 @@ export default function SearchRoute() {
       >
         <div className="border-b border-border/70 px-4 py-3 sm:px-5">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <Tabs value={type} onValueChange={setType} className="w-full md:w-auto">
-              <TabsList className="grid w-full grid-cols-3 sm:inline-flex sm:w-fit">
-              {searchTypes.map((item) => (
-                <TabsTrigger key={item} value={item} className="min-w-0 px-3">
-                  {t(`pages.search.tabs.${item}`)}
-                </TabsTrigger>
-              ))}
+            <Tabs
+              value={type}
+              onValueChange={setType}
+              className="w-full md:w-auto"
+            >
+              <TabsList className="grid w-full grid-cols-2 sm:inline-flex sm:w-fit">
+                {searchTypes.map((item) => (
+                  <TabsTrigger key={item} value={item} className="min-w-0 px-3">
+                    {t(`pages.search.tabs.${item}`)}
+                  </TabsTrigger>
+                ))}
               </TabsList>
             </Tabs>
             {type === "topic" || type === "article" ? (

@@ -92,6 +92,10 @@ func registerAPIRoutes(group *gin.RouterGroup) {
 	topicGroup.GET("/category_navs", apiHandlers.CategoryNavs)
 	topicGroup.GET("/categories", apiHandlers.Categories)
 	topicGroup.GET("/category", apiHandlers.Category)
+
+	categoryGroup := group.Group("/category")
+	categoryGroup.GET("/tree", apiHandlers.CategoryTree)
+	categoryGroup.GET("/by_path", apiHandlers.CategoryByUrl)
 	topicGroup.POST("/create", apiHandlers.TopicCreate)
 	topicGroup.GET("/edit/:id", apiHandlers.TopicEditForm)
 	topicGroup.POST("/edit/:id", apiHandlers.TopicEdit)

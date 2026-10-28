@@ -61,6 +61,7 @@ export function DashboardDataFieldControl({
           value={value}
           options={options}
           placeholder={field.label}
+          emptyLabel={field.emptyLabel}
           disabled={disabled}
           onValueChange={(nextValue) => onChange(nextValue)}
         />

@@ -73,6 +73,7 @@ const (
 	SysConfigQaBountyRequired           = "qaBountyRequired"           // 问答帖是否必填悬赏
 	SysConfigNotificationTypes          = "notificationTypes"          // 通知类型配置（站内信+邮件开关）
 	SysConfigInviteCodeConfig           = "inviteCodeConfig"           // 邀请码注册配置
+	SysConfigCommentsEnabled            = "commentsEnabled"            // 是否允许全站评论
 )
 
 const (

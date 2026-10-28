@@ -115,4 +115,5 @@ func init() {
 	register(13, "drop legacy menu tables", migrate_drop_legacy_menu_tables)
 	register(15, "remove comment admin permissions", migrate_remove_comment_admin_permissions)
 	register(16, "invite code registration config", migrate_invite_code_config)
+	register(17, "article comment mvp", migrate_article_comment_mvp)
 }

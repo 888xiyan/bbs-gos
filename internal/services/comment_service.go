@@ -87,6 +87,22 @@ func (s *commentService) Delete(id int64) error {
 	if err := repositories.CommentRepository.UpdateColumn(sqls.DB(), id, "status", constants.StatusDeleted); err != nil {
 		return err
 	}
+	if comment.Status == constants.StatusOk {
+		_ = sqls.DB().Transaction(func(tx *gorm.DB) error {
+			switch comment.EntityType {
+			case constants.EntityArticle:
+				return ArticleService.decrCommentCount(tx, comment.EntityId)
+			case constants.EntityComment:
+				if err := repositories.CommentRepository.UpdateColumn(tx, comment.EntityId, "comment_count", gorm.Expr("CASE WHEN comment_count > 0 THEN comment_count - 1 ELSE 0 END")); err != nil {
+					return err
+				}
+				if article, _, resolveErr := s.resolveArticleForComment(tx, constants.EntityComment, comment.EntityId); resolveErr == nil {
+					return ArticleService.decrCommentCount(tx, article.Id)
+				}
+			}
+			return nil
+		})
+	}
 	// 用户跟帖计数 -1
 	UserService.DecrCommentCount(comment.UserId)
 	return nil
@@ -108,6 +124,9 @@ func (s *commentService) DeleteByUser(user *models.User, id int64) error {
 
 // Publish 发表评论
 func (s *commentService) Publish(userId int64, form req.CreateCommentReq) (*models.Comment, error) {
+	if !SysConfigService.IsCommentsEnabled() {
+		return nil, errors.New("comments are disabled")
+	}
 	form.Content = strings.TrimSpace(form.Content)
 	entityId := form.DecodedEntityId()
 	if strs.IsBlank(form.EntityType) {
@@ -144,6 +163,13 @@ func (s *commentService) Publish(userId int64, form req.CreateCommentReq) (*mode
 		}
 	}
 	err := sqls.DB().Transaction(func(tx *gorm.DB) error {
+		article, _, resolveErr := s.resolveArticleForComment(tx, form.EntityType, entityId)
+		if resolveErr != nil {
+			return resolveErr
+		}
+		if !article.AllowComments {
+			return errors.New("comments are disabled for this article")
+		}
 		if err := AntiAbuseService.CheckComment(tx, userId, form.Ip); err != nil {
 			return err
 		}
@@ -151,17 +177,12 @@ func (s *commentService) Publish(userId int64, form req.CreateCommentReq) (*mode
 			return err
 		}
 
-		switch form.EntityType {
-		case constants.EntityTopic:
-			if err := TopicService.onComment(tx, entityId, comment); err != nil {
-				return err
-			}
-		case constants.EntityComment: // 二级评论
+		if form.EntityType == constants.EntityComment {
 			if err := s.onComment(tx, comment); err != nil {
 				return err
 			}
 		}
-		return nil
+		return ArticleService.onComment(tx, article.Id, comment)
 	})
 
 	if err != nil {
@@ -182,6 +203,48 @@ func (s *commentService) Publish(userId int64, form req.CreateCommentReq) (*mode
 // onComment 评论被回复（二级评论）
 func (s *commentService) onComment(tx *gorm.DB, comment *models.Comment) error {
 	return repositories.CommentRepository.UpdateColumn(tx, comment.EntityId, "comment_count", gorm.Expr("comment_count + 1"))
+}
+
+func (s *commentService) resolveArticleForComment(tx *gorm.DB, entityType string, entityId int64) (*models.Article, *models.Comment, error) {
+	switch entityType {
+	case constants.EntityArticle:
+		article := repositories.ArticleRepository.Get(tx, entityId)
+		if article == nil || article.Status == constants.StatusDeleted {
+			return nil, nil, errors.New("article not found")
+		}
+		return article, nil, nil
+	case constants.EntityComment:
+		parent := repositories.CommentRepository.Get(tx, entityId)
+		if parent == nil || parent.Status != constants.StatusOk {
+			return nil, nil, errors.New("parent comment not found")
+		}
+		current := parent
+		seen := map[int64]struct{}{current.Id: {}}
+		for i := 0; i < 100; i++ {
+			if current.EntityType == constants.EntityArticle {
+				article := repositories.ArticleRepository.Get(tx, current.EntityId)
+				if article == nil || article.Status == constants.StatusDeleted {
+					return nil, nil, errors.New("article not found")
+				}
+				return article, parent, nil
+			}
+			if current.EntityType != constants.EntityComment {
+				return nil, nil, errors.New("only article comments can be replied to")
+			}
+			if _, exists := seen[current.EntityId]; exists {
+				return nil, nil, errors.New("invalid comment hierarchy")
+			}
+			seen[current.EntityId] = struct{}{}
+			next := repositories.CommentRepository.Get(tx, current.EntityId)
+			if next == nil || next.Status != constants.StatusOk {
+				return nil, nil, errors.New("parent comment not found")
+			}
+			current = next
+		}
+		return nil, nil, errors.New("invalid comment hierarchy")
+	default:
+		return nil, nil, errors.New("only article comments are supported")
+	}
 }
 
 // // 统计数量

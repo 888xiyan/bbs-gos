@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -80,6 +81,92 @@ func TestCategoryListFiltersByStatus(t *testing.T) {
 	}
 }
 
+func TestCategoryCreateWithoutParentCreatesTopLevelCategory(t *testing.T) {
+	db := setupAdminCategoryTestDB(t)
+	_ = db
+
+	values := url.Values{
+		"name":        {"技术"},
+		"urlPath":     {"/tech"},
+		"type":        {"normal"},
+		"allowPost":   {"true"},
+		"description": {"技术讨论"},
+	}
+	category := postCategoryMutation(t, CategoryCreate, values.Encode())
+
+	if category.Id == 0 {
+		t.Fatalf("expected created category id, got %#v", category)
+	}
+	if category.ParentId != 0 {
+		t.Fatalf("expected a top-level category, got parentId=%d", category.ParentId)
+	}
+	if category.Name != "技术" {
+		t.Fatalf("unexpected category name %q", category.Name)
+	}
+}
+
+func TestCategoryUpdateAllowsEmptyDescriptionForTopLevelCategory(t *testing.T) {
+	db := setupAdminCategoryTestDB(t)
+	mustCreateCategory(t, db, &models.Category{
+		Model:       models.Model{Id: 1},
+		Name:        "默认节点",
+		Description: "",
+		Type:        constants.CategoryTypeNormal,
+		Status:      constants.StatusOk,
+	})
+
+	values := url.Values{
+		"id":        {"1"},
+		"parentId":  {"0"},
+		"name":      {"社区"},
+		"urlPath":   {"/community"},
+		"type":      {"normal"},
+		"allowPost": {"true"},
+		"status":    {"0"},
+	}
+	category := postCategoryMutation(t, CategoryUpdate, values.Encode())
+
+	if category.Id != 1 {
+		t.Fatalf("expected updated category id 1, got %#v", category)
+	}
+	if category.Name != "社区" {
+		t.Fatalf("expected renamed category, got %q", category.Name)
+	}
+	if category.Description != "" {
+		t.Fatalf("expected empty description to remain allowed, got %q", category.Description)
+	}
+}
+
+func postCategoryMutation(t *testing.T, handler gin.HandlerFunc, body string) models.Category {
+	t.Helper()
+
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(w)
+	req := httptest.NewRequest(http.MethodPost, "/api/admin/category/mutation", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	ctx.Request = req
+
+	handler(ctx)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d: %s", w.Code, w.Body.String())
+	}
+
+	var result struct {
+		Success bool            `json:"success"`
+		Data    models.Category `json:"data"`
+		Message string          `json:"message"`
+	}
+	if err := json.Unmarshal(w.Body.Bytes(), &result); err != nil {
+		t.Fatalf("decode response %q: %v", w.Body.String(), err)
+	}
+	if !result.Success {
+		t.Fatalf("expected successful mutation, got %s", w.Body.String())
+	}
+	return result.Data
+}
+
 func setupAdminCategoryTestDB(t *testing.T) *gorm.DB {
 	t.Helper()
 
@@ -114,6 +201,9 @@ func setupAdminCategoryTestDB(t *testing.T) *gorm.DB {
 
 func mustCreateCategory(t *testing.T, db *gorm.DB, category *models.Category) {
 	t.Helper()
+	if category.UrlPath == "" {
+		category.UrlPath = "/test-" + strings.ReplaceAll(category.Name, " ", "-")
+	}
 
 	if err := db.Create(category).Error; err != nil {
 		t.Fatalf("create category: %v", err)

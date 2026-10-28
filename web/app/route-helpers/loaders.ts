@@ -12,6 +12,11 @@ export type TopicListRouteData = {
   tag?: Tag | null
 }
 
+export type HomeArticleRouteData = {
+  articles: PageData<Article>
+  categories: Category[]
+}
+
 const qaStatusOptions = ["", "unsolved", "solved"]
 const sortOptions = ["latestPublish", "latestReply"]
 
@@ -115,6 +120,16 @@ export async function loadTopicListRouteData(
   return { topics, categories }
 }
 
+export async function loadHomeArticleRouteData(
+  request?: Request
+): Promise<HomeArticleRouteData> {
+  const [articles, categories] = await Promise.all([
+    loadArticles({ request }),
+    loadCategories(request),
+  ])
+  return { articles, categories }
+}
+
 export async function loadCategoryRouteData({
   request,
   id,
@@ -169,7 +184,10 @@ export async function loader({
 }) {
   const pathname = new URL(request.url).pathname
 
-  if (pathname === "/" || pathname === "/topics") {
+  if (pathname === "/") {
+    return loadHomeArticleRouteData(request)
+  }
+  if (pathname === "/topics") {
     return loadTopicListRouteData(request)
   }
   if (pathname.startsWith("/topics/category/")) {
@@ -192,6 +210,7 @@ export async function loadArticles(params: {
   request?: Request
   cursor?: string
   tagId?: string | number
+  categoryId?: string | number
 }) {
   const path = params.tagId
     ? "/api/article/tag/articles"
@@ -202,12 +221,38 @@ export async function loadArticles(params: {
     params: {
       cursor: params.cursor || "",
       tagId: params.tagId,
+      categoryId: params.categoryId,
     },
   })
 }
 
 export type ArticleListRouteData = PageData<Article> & {
   tag?: Tag | null
+}
+
+export type ArticleCategoryRouteData = PageData<Article> & {
+  category: Category
+}
+
+export async function loadArticleCategoryRouteData({
+  request,
+  id,
+}: {
+  request?: Request
+  id?: string
+}): Promise<ArticleCategoryRouteData> {
+  const categoryId = Number.parseInt(id || "", 10)
+  if (!Number.isInteger(categoryId) || categoryId <= 0) {
+    invalidPathRedirect()
+  }
+  const [articles, category] = await Promise.all([
+    loadArticles({ request, categoryId }),
+    loadCategory(request, categoryId),
+  ])
+  if (!category) {
+    invalidPathRedirect()
+  }
+  return Object.assign(articles, { category })
 }
 
 export async function loadArticleListRouteData(params: {

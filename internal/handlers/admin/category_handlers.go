@@ -139,6 +139,9 @@ func CategoryCreate(ctx *gin.Context) {
 		ginx.WriteJSON(ctx, err)
 		return
 	}
+	if params.QueryValue(ctx, "allowPost") == "" {
+		t.AllowPost = true
+	}
 	t.SortNo = services.CategoryService.GetNextSortNo()
 	if t.ParentId < 0 {
 		t.ParentId = 0
@@ -171,19 +174,21 @@ func CategoryUpdate(ctx *gin.Context) {
 		ginx.WriteJSON(ctx, err)
 		return
 	}
-	t := services.CategoryService.Get(id)
-	if t == nil {
+	existing := services.CategoryService.Get(id)
+	if existing == nil {
 		ginx.WriteJSON(ctx, ginx.ErrorMessage("entity not found"))
 		return
 	}
+	allowPostValue := params.QueryValue(ctx, "allowPost")
+	allowPost := existing.AllowPost
+	if allowPostValue != "" {
+		allowPost = allowPostValue == "true" || allowPostValue == "1"
+	}
+	t := *existing
 
-	err = ginx.Bind(ctx, t)
+	err = ginx.Bind(ctx, &t)
 	if err != nil {
 		ginx.WriteJSON(ctx, err)
-		return
-	}
-	if strings.TrimSpace(t.Description) == "" {
-		ginx.WriteJSON(ctx, ginx.ErrorMessage("param: description required"))
 		return
 	}
 	if t.ParentId < 0 {
@@ -193,6 +198,7 @@ func CategoryUpdate(ctx *gin.Context) {
 	if t.ParentId == id {
 		t.ParentId = 0
 	}
+	t.AllowPost = allowPost
 
 	// 子节点类型必须与父节点一致，直接取父节点的 type，忽略表单传入
 	if t.ParentId > 0 {
@@ -218,12 +224,12 @@ func CategoryUpdate(ctx *gin.Context) {
 		}
 	}
 
-	err = services.CategoryService.Update(t)
+	err = services.CategoryService.Update(&t)
 	if err != nil {
 		ginx.WriteJSON(ctx, err)
 		return
 	}
-	ginx.WriteJSON(ctx, t)
+	ginx.WriteJSON(ctx, &t)
 
 }
 

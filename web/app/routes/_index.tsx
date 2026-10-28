@@ -1,5 +1,6 @@
 import { useLoaderData } from "react-router"
 
+import { ArticleList } from "@/components/article/article-list"
 import { EmptyState } from "@/components/common/empty-state"
 import { LoadMore } from "@/components/common/load-more"
 import { HomeAside } from "@/components/layout/home-aside"
@@ -8,20 +9,22 @@ import { TopicFeedTabs } from "@/components/topic/topic-feed-tabs"
 import { TopicListItem } from "@/components/topic/topic-list-item"
 import { TopicsNavContent } from "@/components/topic/topics-nav-content"
 import { apiFetch } from "@/lib/api/client"
-import type { PageData, Topic } from "@/lib/api/types"
+import type { Article, PageData, Topic } from "@/lib/api/types"
 import { useI18n } from "@/lib/i18n/provider"
 import { rootDataFromMatches, siteHomeMeta } from "@/lib/seo"
 import { useDocumentTitle } from "@/lib/use-document-title"
 
 import {
+  loadHomeArticleRouteData,
   loadTopicListRouteData,
+  type HomeArticleRouteData,
   type TopicListRouteData,
 } from "../route-helpers/loaders"
 
 export { loader } from "../route-helpers/loaders"
 
 export async function clientLoader() {
-  return loadTopicListRouteData()
+  return loadHomeArticleRouteData()
 }
 
 export function meta({
@@ -40,7 +43,10 @@ export function TopicListRoute({ title }: { title?: string }) {
   return (
     <MainShell aside={<HomeAside />}>
       <div className="topics-wrapper">
-        <TopicsNavContent initialCategories={categories} currentCategoryId={0} />
+        <TopicsNavContent
+          initialCategories={categories}
+          currentCategoryId={0}
+        />
         <div className="topics-main">
           <div className="rounded-lg bg-background">
             <TopicFeedTabs currentCategoryId={0} />
@@ -81,6 +87,48 @@ export function TopicListRoute({ title }: { title?: string }) {
   )
 }
 
+export function HomeArticleRoute() {
+  const { articles, categories } = useLoaderData() as HomeArticleRouteData
+  const { t } = useI18n()
+  useDocumentTitle(t("pages.articles.title"))
+
+  return (
+    <MainShell aside={<HomeAside />}>
+      <div className="topics-wrapper">
+        <TopicsNavContent
+          initialCategories={categories}
+          currentCategoryId={0}
+          basePath="/articles/category"
+          allHref="/"
+        />
+        <div className="topics-main">
+          <div className="rounded-lg bg-background">
+            <LoadMore<Article>
+              initialItems={articles.results}
+              initialCursor={articles.cursor || ""}
+              initialHasMore={articles.hasMore}
+              initialLoad={false}
+              autoLoadOnScroll
+              resetKey="/api/article/articles"
+              labels={{
+                loadMore: t("common.loadMore.loadMore"),
+                noMore: t("common.loadMore.noMore"),
+              }}
+              loadPage={({ cursor }) =>
+                apiFetch<PageData<Article>>("/api/article/articles", {
+                  params: { cursor },
+                })
+              }
+              renderItems={(items) => <ArticleList articles={items} t={t} />}
+              renderEmpty={() => <EmptyState title={t("common.noData")} />}
+            />
+          </div>
+        </div>
+      </div>
+    </MainShell>
+  )
+}
+
 export default function IndexRoute() {
-  return <TopicListRoute />
+  return <HomeArticleRoute />
 }

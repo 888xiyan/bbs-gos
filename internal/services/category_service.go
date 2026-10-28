@@ -2,6 +2,8 @@ package services
 
 import (
 	"errors"
+	"regexp"
+	"strings"
 
 	"bbs-go/internal/models/constants"
 	"bbs-go/internal/pkg/locales"
@@ -23,6 +25,22 @@ func newCategoryService() *categoryService {
 }
 
 type categoryService struct {
+}
+
+var categoryURLPathPattern = regexp.MustCompile(`^/(?:[\p{L}0-9-]+)(?:/[\p{L}0-9-]+)*$`)
+
+var reservedCategoryURLPaths = map[string]struct{}{
+	"/admin":     {},
+	"/api":       {},
+	"/article":   {},
+	"/articles":  {},
+	"/dashboard": {},
+	"/install":   {},
+	"/res":       {},
+	"/search":    {},
+	"/topic":     {},
+	"/topics":    {},
+	"/user":      {},
 }
 
 func (s *categoryService) Get(id int64) *models.Category {
@@ -50,11 +68,142 @@ func (s *categoryService) FindPageByCnd(cnd *sqls.Cnd) (list []models.Category, 
 }
 
 func (s *categoryService) Create(t *models.Category) error {
+	if err := s.Validate(t, 0); err != nil {
+		return err
+	}
 	return repositories.CategoryRepository.Create(sqls.DB(), t)
 }
 
 func (s *categoryService) Update(t *models.Category) error {
+	if err := s.Validate(t, t.Id); err != nil {
+		return err
+	}
+	if existing := s.Get(t.Id); existing != nil && existing.UrlPath != t.UrlPath {
+		t.PreviousUrlPath = existing.UrlPath
+	}
 	return repositories.CategoryRepository.Update(sqls.DB(), t)
+}
+
+func (s *categoryService) Validate(category *models.Category, excludeId int64) error {
+	category.Name = strings.TrimSpace(category.Name)
+	category.UrlPath = strings.TrimSpace(category.UrlPath)
+	if category.Name == "" {
+		return errors.New("category name is required")
+	}
+	if category.ParentId < 0 {
+		return errors.New("invalid parent category")
+	}
+	if excludeId > 0 && category.ParentId == excludeId {
+		return errors.New("category cannot be its own parent")
+	}
+	if err := s.validateURLPath(category.UrlPath, excludeId); err != nil {
+		return err
+	}
+	if category.ParentId > 0 {
+		parent := s.Get(category.ParentId)
+		if parent == nil || parent.Status != constants.StatusOk {
+			return errors.New("parent category not found")
+		}
+		if excludeId > 0 && s.ancestorContains(category.ParentId, excludeId) {
+			return errors.New("category parent creates a cycle")
+		}
+		if s.depth(category.ParentId, excludeId) >= 3 {
+			return errors.New("category supports at most three levels")
+		}
+	}
+	return nil
+}
+
+func (s *categoryService) ancestorContains(parentId, targetId int64) bool {
+	seen := map[int64]struct{}{}
+	for parentId > 0 {
+		if parentId == targetId {
+			return true
+		}
+		if _, exists := seen[parentId]; exists {
+			return true
+		}
+		seen[parentId] = struct{}{}
+		parent := s.Get(parentId)
+		if parent == nil {
+			return false
+		}
+		parentId = parent.ParentId
+	}
+	return false
+}
+
+func (s *categoryService) validateURLPath(urlPath string, excludeId int64) error {
+	if !categoryURLPathPattern.MatchString(urlPath) {
+		return errors.New("invalid category URL path")
+	}
+	firstSegment := strings.Split(strings.TrimPrefix(urlPath, "/"), "/")[0]
+	if _, reserved := reservedCategoryURLPaths["/"+firstSegment]; reserved {
+		return errors.New("category URL path is reserved")
+	}
+	existing := s.FindOne(sqls.NewCnd().Eq("url_path", urlPath))
+	if existing != nil && existing.Id != excludeId {
+		return errors.New("category URL path already exists")
+	}
+	return nil
+}
+
+func (s *categoryService) depth(id, excludeId int64) int {
+	depth := 1
+	seen := map[int64]struct{}{}
+	current := id
+	for current > 0 {
+		if _, exists := seen[current]; exists {
+			return 999
+		}
+		seen[current] = struct{}{}
+		category := s.Get(current)
+		if category == nil || category.ParentId == 0 {
+			break
+		}
+		current = category.ParentId
+		depth++
+	}
+	return depth
+}
+
+func (s *categoryService) ValidateForArticle(categoryId int64) (*models.Category, error) {
+	category := s.Get(categoryId)
+	if category == nil || category.Status != constants.StatusOk {
+		return nil, errors.New("category not found")
+	}
+	if !category.AllowPost {
+		return nil, errors.New("category does not allow article publishing")
+	}
+	return category, nil
+}
+
+func (s *categoryService) GetPath(id int64) string {
+	var names []string
+	seen := map[int64]struct{}{}
+	for id > 0 {
+		if _, exists := seen[id]; exists {
+			break
+		}
+		seen[id] = struct{}{}
+		category := s.Get(id)
+		if category == nil {
+			break
+		}
+		names = append([]string{category.Name}, names...)
+		id = category.ParentId
+	}
+	return strings.Join(names, " / ")
+}
+
+func (s *categoryService) GetByUrlPath(urlPath string) *models.Category {
+	urlPath = strings.TrimSpace(urlPath)
+	if urlPath == "" {
+		return nil
+	}
+	return s.FindOne(sqls.NewCnd().
+		Where("(url_path = ? OR previous_url_path = ?)", urlPath, urlPath).
+		Eq("status", constants.StatusOk))
 }
 
 func (s *categoryService) Updates(id int64, columns map[string]interface{}) error {
@@ -71,11 +220,9 @@ func (s *categoryService) DeleteWithCheck(id int64) error {
 	if category == nil {
 		return nil
 	}
-	if category.ParentId == 0 {
-		children := s.GetChildren(id)
-		if len(children) > 0 {
-			return errors.New(locales.Get("topic.category.has_children"))
-		}
+	children := s.GetChildren(id)
+	if len(children) > 0 {
+		return errors.New(locales.Get("topic.category.has_children"))
 	}
 	return repositories.CategoryRepository.Updates(sqls.DB(), id, map[string]interface{}{
 		"status": constants.StatusDeleted,
@@ -104,14 +251,21 @@ func (s *categoryService) GetCategoryIdsForList(categoryId int64) []int64 {
 	if category == nil {
 		return nil
 	}
-	if category.ParentId == 0 {
-		ids := []int64{categoryId}
-		for _, c := range s.GetChildren(categoryId) {
-			ids = append(ids, c.Id)
+	ids := []int64{categoryId}
+	seen := map[int64]struct{}{categoryId: {}}
+	var collect func(parentId int64)
+	collect = func(parentId int64) {
+		for _, child := range s.GetChildren(parentId) {
+			if _, exists := seen[child.Id]; exists {
+				continue
+			}
+			seen[child.Id] = struct{}{}
+			ids = append(ids, child.Id)
+			collect(child.Id)
 		}
-		return ids
 	}
-	return []int64{categoryId}
+	collect(categoryId)
+	return ids
 }
 
 func (s *categoryService) GetCategories() []models.Category {

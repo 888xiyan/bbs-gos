@@ -26,6 +26,23 @@ function isPublicRoute(pathname: string) {
   }
 
   if (
+    path === "/dashboard" ||
+    path.startsWith("/dashboard/") ||
+    path === "/tasks" ||
+    path === "/topic/create" ||
+    path.startsWith("/topic/edit/") ||
+    path === "/article/create" ||
+    path.startsWith("/article/edit/") ||
+    path === "/user/profile" ||
+    path.startsWith("/user/profile/") ||
+    path === "/user/messages" ||
+    path === "/user/favorites" ||
+    path === "/user/scores"
+  ) {
+    return false
+  }
+
+  if (
     path === "/topics" ||
     path.startsWith("/topics/") ||
     path === "/articles" ||
@@ -37,11 +54,9 @@ function isPublicRoute(pathname: string) {
     return true
   }
 
-  // Public user profiles are addressable by user id; private account routes
-  // remain protected below.
-  return /^\/user\/(?!profile(?:\/|$)|messages(?:\/|$)|favorites(?:\/|$)|scores(?:\/|$))[^/]+(?:\/(?:articles|badges|fans|followed))?$/.test(
-    path
-  )
+  // Unknown paths are handled by the catch-all route, which resolves custom
+  // category URLs or redirects invalid paths to sign-in.
+  return true
 }
 
 export function AuthRouteGuard({ children }: { children: React.ReactNode }) {

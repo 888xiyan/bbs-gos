@@ -638,6 +638,7 @@ export default function DashboardSettingsRoute() {
                   userObserveSeconds: settings.userObserveSeconds,
                   antiAbuseConfig: settings.antiAbuseConfig,
                   inviteCodeConfig: settings.inviteCodeConfig,
+                  commentsEnabled: settings.commentsEnabled,
                 })
               }
             />
@@ -1612,6 +1613,13 @@ function SpamSettings({ settings, saving, s, update, onSave }: SettingsProps) {
           max={720}
           tooltip={s("spam.userObserveSecondsTooltip")}
           onChange={(value) => update("userObserveSeconds", value)}
+        />
+      </Field>
+      <Field label={s("spam.commentsEnabled")}>
+        <SwitchWithTooltip
+          checked={settings.commentsEnabled !== false}
+          tooltip={s("spam.commentsEnabledTooltip")}
+          onChange={(checked) => update("commentsEnabled", checked)}
         />
       </Field>
       <SectionTitle>{s("spam.inviteCodeTitle")}</SectionTitle>

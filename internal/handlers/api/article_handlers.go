@@ -31,12 +31,14 @@ func bindArticleForm(ctx *gin.Context) (req.CreateArticleReq, error) {
 		return req.CreateArticleReq{}, err
 	}
 	return req.CreateArticleReq{
-		Title:       body.Title,
-		Summary:     body.Summary,
-		Content:     body.Content,
-		ContentType: constants.ContentTypeMarkdown,
-		Cover:       req.ParseImageDTO(body.Cover),
-		Tags:        body.ParsedTags(),
+		Title:         body.Title,
+		CategoryId:    body.CategoryId,
+		Summary:       body.Summary,
+		Content:       body.Content,
+		ContentType:   constants.ContentTypeMarkdown,
+		Cover:         req.ParseImageDTO(body.Cover),
+		Tags:          body.ParsedTags(),
+		AllowComments: body.AllowComments == nil || *body.AllowComments,
 	}, nil
 }
 
@@ -153,12 +155,14 @@ func ArticleEditForm(ctx *gin.Context) {
 	}
 
 	ginx.WriteJSON(ctx, map[string]any{
-		"id":        article.Id,
-		"articleId": article.Id,
-		"title":     article.Title,
-		"content":   article.Content,
-		"tags":      tagNames,
-		"cover":     cover,
+		"id":            article.Id,
+		"articleId":     article.Id,
+		"title":         article.Title,
+		"categoryId":    article.CategoryId,
+		"content":       article.Content,
+		"allowComments": article.AllowComments,
+		"tags":          tagNames,
+		"cover":         cover,
 	})
 
 }
@@ -196,7 +200,7 @@ func ArticleEdit(ctx *gin.Context) {
 		return
 	}
 
-	if err := services.ArticleService.Edit(articleId, form.Tags, form.Title, form.Content, form.Cover); err != nil {
+	if err := services.ArticleService.Edit(articleId, form); err != nil {
 		ginx.WriteJSON(ctx, err)
 		return
 	}
@@ -296,7 +300,11 @@ func ArticleUserArticles(ctx *gin.Context) {
 
 func ArticleArticles(ctx *gin.Context) {
 	cursor := params.FormValueInt64Default(ctx, "cursor", 0)
-	articles, cursor, hasMore := services.ArticleService.GetArticles(cursor)
+	categoryIds := []int64(nil)
+	if categoryId := params.FormValueInt64Default(ctx, "categoryId", 0); categoryId > 0 {
+		categoryIds = services.CategoryService.GetCategoryIdsForList(categoryId)
+	}
+	articles, cursor, hasMore := services.ArticleService.GetArticles(cursor, categoryIds...)
 	ginx.WriteJSON(ctx, ginx.CursorData(render.BuildSimpleArticles(articles), strconv.FormatInt(cursor, 10), hasMore))
 
 }

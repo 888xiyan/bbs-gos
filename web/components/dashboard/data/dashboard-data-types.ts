@@ -26,6 +26,7 @@ export type DashboardDataFilter = DashboardDataOptionSource & {
 export type DashboardDataFormField = DashboardDataOptionSource & {
   name: string
   label: string
+  emptyLabel?: string
   required?: boolean
   colSpan?: 1 | 2
   type?:
