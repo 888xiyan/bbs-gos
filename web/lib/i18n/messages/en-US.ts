@@ -26,6 +26,7 @@ const enUS = {
       dashboard: "Dashboard",
       logout: "Sign out",
       login: "Sign in",
+      agents: "Agents",
       confirmLogout: "Are you sure you want to sign out?",
       toggleMenu: "Toggle menu",
     },
@@ -95,6 +96,8 @@ const enUS = {
       settings: "Settings",
       siteSettings: "Settings",
       inviteCodes: "Invite Codes",
+      agents: "Agents",
+      agentTokens: "Agent Tokens",
       emailLogs: "Email Logs",
     },
     shortcuts: {
@@ -133,6 +136,8 @@ const enUS = {
       expand: "Expand",
       collapse: "Collapse",
       assignPermissions: "Permissions",
+      disableAgent: "Disable agent",
+      revokeAgentToken: "Revoke token",
       copyInviteCode: "Copy invite code",
       disableInviteCode: "Disable invite code",
     },
@@ -151,12 +156,17 @@ const enUS = {
       reportIgnored: "Report ignored",
       inviteCodeCopied: "Invite code copied",
       inviteCodeDisabled: "Invite code disabled",
+      agentDisabled: "Agent disabled",
+      agentTokenRevoked: "Agent token revoked",
     },
     confirm: {
       title: "Confirm action",
       ok: "Confirm",
     },
     confirmDisableInviteCode: "Disable this unused invite code?",
+    confirmDisableAgent: "Disable this Agent and stop publishing?",
+    confirmRevokeAgentToken: "Revoke this Agent token?",
+    agentStatus: { active: "Active", disabled: "Disabled", revoked: "Revoked" },
     inviteCodeStatus: {
       unused: "Unused",
       used: "Used",
@@ -546,6 +556,16 @@ const enUS = {
         commentsEnabled: "Enable comments",
         commentsEnabledTooltip:
           "Allow users to create article comments and replies.",
+        agentTitle: "User Agents",
+        agentEnabled: "Enable Agent publishing",
+        agentEnabledTooltip:
+          "Allow user-owned API Agents to publish topics and comments.",
+        agentMaxCount: "Agents per user",
+        agentMaxCountTooltip: "Maximum number of active agents for each user.",
+        agentTokenExpireDays: "Token validity (days)",
+        agentTokenExpireDaysTooltip:
+          "Agent API tokens expire automatically after this period.",
+        agentMandatoryTags: "Mandatory topic tag IDs",
         frequencyTitle: "Publish Frequency Limits",
         userRateLimit: "User Limits",
         ipRateLimit: "IP Limits",
@@ -761,6 +781,13 @@ const enUS = {
       user: "User",
       userId: "User ID",
       inviteCode: "Invite Code",
+      agentId: "Agent ID",
+      agentName: "Agent Name",
+      tokenCount: "Token Count",
+      tokenPrefix: "Token Prefix",
+      lastActiveTime: "Last Active",
+      lastUsedTime: "Last Used",
+
       createdBy: "Created By",
       createdByUserId: "Creator User ID",
       usedBy: "Used By",
@@ -882,6 +909,14 @@ const enUS = {
       userReports: {
         title: "User Reports",
         description: "Inspect content reports submitted by community users.",
+      },
+      agents: {
+        title: "User Agents",
+        description: "Manage user-owned API publishing agents and tokens.",
+      },
+      agentTokens: {
+        title: "Agent Tokens",
+        description: "Inspect and revoke user Agent API tokens.",
       },
       inviteCodes: {
         title: "Registration Invite Codes",
@@ -1502,6 +1537,21 @@ const enUS = {
     },
     articles: {
       title: "Articles",
+    },
+    agents: {
+      title: "My Agents",
+      name: "Agent name",
+      description: "Description",
+      create: "Create Agent",
+      created: "Agent created",
+      tokens: "View tokens",
+      issueToken: "Issue token",
+      tokenIssued: "Token issued",
+      tokenOnce: "Copy this token now",
+      revokeToken: "Revoke",
+      tokenRevoked: "Token revoked",
+      disable: "Disable",
+      disabled: "Agent disabled",
     },
     article: {
       detail: {

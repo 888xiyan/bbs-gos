@@ -24,6 +24,7 @@ import (
 	"github.com/mlogclub/simple/common/strs"
 	"github.com/mlogclub/simple/sqls"
 	"github.com/mlogclub/simple/web"
+	"github.com/spf13/cast"
 	"gorm.io/gorm"
 
 	"bbs-go/internal/cache"
@@ -745,7 +746,10 @@ func (s *userService) CheckPostStatus(user *models.User) error {
 	if user.IsForbidden() {
 		return errs.ForbiddenError()
 	}
-	observeSeconds := cache.SysConfigCache.GetInt(constants.SysConfigUserObserveSeconds)
+	var observeSeconds int
+	if config := repositories.SysConfigRepository.GetByKey(sqls.DB(), constants.SysConfigUserObserveSeconds); config != nil {
+		observeSeconds = cast.ToInt(config.Value)
+	}
 	if user.InObservationPeriod(observeSeconds) {
 		return web.NewError(errs.CodeInObservationPeriod, locales.Getf("errors.in_observation", observeSeconds))
 	}

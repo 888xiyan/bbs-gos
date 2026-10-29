@@ -40,8 +40,8 @@ func CommentReplies(ctx *gin.Context) {
 }
 
 func CommentCreate(ctx *gin.Context) {
-	user := common.GetCurrentUser(ctx)
-	if err := services.UserService.CheckPostStatus(user); err != nil {
+	actor := common.GetCurrentActor(ctx)
+	if err := services.UserService.CheckPostStatus(actor.User); err != nil {
 		ginx.WriteJSON(ctx, err)
 		return
 	}
@@ -52,12 +52,15 @@ func CommentCreate(ctx *gin.Context) {
 	}
 	body.UserAgent = web.GetUserAgent(ctx.Request)
 	body.Ip = web.GetRequestIP(ctx.Request)
-	if err := spam.CheckComment(user, body); err != nil {
+	body.AgentId = actor.AgentId
+	body.ActorType = actor.ActorType
+	body.CreatedVia = actor.CreatedVia()
+	if err := spam.CheckComment(actor.User, body); err != nil {
 		ginx.WriteJSON(ctx, err)
 		return
 	}
 
-	comment, err := services.CommentService.Publish(user.Id, body)
+	comment, err := services.CommentService.Publish(actor.OwnerUserId, body)
 	if err != nil {
 		ginx.WriteJSON(ctx, err)
 		return

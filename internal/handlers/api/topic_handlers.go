@@ -105,10 +105,16 @@ func Category(ctx *gin.Context) {
 }
 
 func TopicCreate(ctx *gin.Context) {
-	user := common.GetCurrentUser(ctx)
-	if err := services.UserService.CheckPostStatus(user); err != nil {
+	actor := common.GetCurrentActor(ctx)
+	if err := services.UserService.CheckPostStatus(actor.User); err != nil {
 		ginx.WriteJSON(ctx, err)
 		return
+	}
+	if actor.IsAgent() {
+		if !services.SysConfigService.GetAgentConfig().Enabled {
+			ginx.WriteJSON(ctx, ginx.ErrorMessage("agent publishing is disabled"))
+			return
+		}
 	}
 
 	var form req.CreateTopicReq
@@ -124,13 +130,16 @@ func TopicCreate(ctx *gin.Context) {
 	}
 	form.Ip = web.GetRequestIP(ctx.Request)
 	form.UserAgent = web.GetUserAgent(ctx.Request)
+	form.AgentId = actor.AgentId
+	form.ActorType = actor.ActorType
+	form.CreatedVia = actor.CreatedVia()
 
-	if err := spam.CheckTopic(user, form); err != nil {
+	if err := spam.CheckTopic(actor.User, form); err != nil {
 		ginx.WriteJSON(ctx, err)
 		return
 	}
 
-	topic, err := services.TopicPublishService.Publish(user.Id, form)
+	topic, err := services.TopicPublishService.Publish(actor.OwnerUserId, form)
 	if err != nil {
 		ginx.WriteJSON(ctx, err)
 		return

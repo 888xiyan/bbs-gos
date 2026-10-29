@@ -74,6 +74,11 @@ const (
 	SysConfigNotificationTypes          = "notificationTypes"          // 通知类型配置（站内信+邮件开关）
 	SysConfigInviteCodeConfig           = "inviteCodeConfig"           // 邀请码注册配置
 	SysConfigCommentsEnabled            = "commentsEnabled"            // 是否允许全站评论
+	SysConfigAgentPublishEnabled        = "agentPublishEnabled"        // 是否允许 Agent 发布
+	SysConfigAgentMaxCount              = "agentMaxCount"              // 每用户 Agent 数量
+	SysConfigAgentTokenExpireDays       = "agentTokenExpireDays"       // Agent Token 有效天数
+	SysConfigAgentMandatoryTags         = "agentMandatoryTags"         // Agent 帖子强制标签 ID
+	SysConfigAgentConfig                = "agentConfig"                // Agent 汇总配置
 )
 
 const (
@@ -91,6 +96,8 @@ const (
 	EntityTask       = "task"
 	EntityAttachment = "attachment"
 	EntityInviteCode = "inviteCode"
+	EntityAgent      = "agent"
+	EntityAgentToken = "agentToken"
 )
 
 const (
@@ -148,6 +155,20 @@ const (
 	OpTypeGenerate        = "generate"
 	OpTypeDisable         = "disable"
 	OpTypeView            = "view"
+)
+
+const (
+	ActorTypeUser   = "user"
+	ActorTypeAgent  = "agent"
+	CreatedViaWeb   = "web"
+	CreatedViaAPI   = "api"
+	CreatedViaAgent = "agent"
+)
+
+const (
+	AgentStatusActive   = "active"
+	AgentStatusDisabled = "disabled"
+	AgentStatusRevoked  = "revoked"
 )
 
 // InviteCodeStatus 邀请码状态

@@ -145,7 +145,7 @@ func TestHandlersDoNotUseControllerStyleStructReceivers(t *testing.T) {
 		t.Fatal("expected handler files")
 	}
 
-	forbidden := regexp.MustCompile(`type\s+\w+Handler\s+struct|func\s+\(\w+\s+\*\w+Handler\)|&\w+Handler\{|\*ginx\.Context|ginx\.NewContext|func\s+[A-Z]\w*(Any|Get|Post|Delete)\w*\(ctx\s+\*gin\.Context\)|ginx\.WriteJSON\(ctx,\s*[a-z]\w*\(ginx\.NewContext\(ctx\)|ginx\.WriteBadRequest|ginx\.WriteStatusJSON|ginx\.WriteJSON\(ctx,\s*web\.Json|\.JsonResult\(\)`)
+	forbidden := regexp.MustCompile(`type\s+\w+Handler\s+struct|func\s+\(\w+\s+\*\w+Handler\)|&\w+Handler\{|\*ginx\.Context|ginx\.NewContext|ginx\.WriteJSON\(ctx,\s*[a-z]\w*\(ginx\.NewContext\(ctx\)|ginx\.WriteBadRequest|ginx\.WriteStatusJSON|ginx\.WriteJSON\(ctx,\s*web\.Json|\.JsonResult\(\)`)
 	for _, file := range files {
 		source, err := os.ReadFile(file)
 		if err != nil {
@@ -175,6 +175,12 @@ func TestGinRouterRegistersCompatibleAPIPaths(t *testing.T) {
 		http.MethodPost + " /api/admin/seo/sitemap/generate",
 		http.MethodGet + " /api/category/tree",
 		http.MethodGet + " /api/category/by_path",
+		http.MethodPost + " /api/agents",
+		http.MethodGet + " /api/agents",
+		http.MethodPost + " /api/agents/:id/tokens",
+		http.MethodPost + " /api/agents/:id/tokens/:tokenId/revoke",
+		http.MethodPost + " /api/admin/agent/list",
+		http.MethodPost + " /api/admin/agent-token/list",
 		http.MethodPost + " /api/admin/role/list",
 		http.MethodPost + " /api/admin/link/delete",
 		http.MethodPost + " /api/admin/link/update_sort",

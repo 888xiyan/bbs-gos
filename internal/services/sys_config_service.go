@@ -18,6 +18,7 @@ import (
 	"github.com/mlogclub/simple/common/jsons"
 	"github.com/mlogclub/simple/common/strs"
 	"github.com/mlogclub/simple/sqls"
+	"github.com/spf13/cast"
 	"github.com/tidwall/gjson"
 
 	"gorm.io/gorm"
@@ -123,6 +124,15 @@ func (s *sysConfigService) SetAll(configStr string) error {
 	if inviteCodeConfig := json.Get(constants.SysConfigInviteCodeConfig); inviteCodeConfig.Exists() {
 		if err := validateInviteCodeConfig(inviteCodeConfig.String()); err != nil {
 			return err
+		}
+	}
+	if agentConfig := json.Get(constants.SysConfigAgentConfig); agentConfig.Exists() {
+		var config dto.AgentConfig
+		if err := jsons.Parse(agentConfig.String(), &config); err != nil ||
+			config.MaxCount < 1 || config.MaxCount > 20 ||
+			config.TokenExpireDays < 1 || config.TokenExpireDays > 365 ||
+			len(config.MandatoryTags) > 100 {
+			return errors.New("invalid agent configuration")
 		}
 	}
 	return sqls.DB().Transaction(func(tx *gorm.DB) error {
@@ -306,6 +316,51 @@ func (s *sysConfigService) IsCommentsEnabled() bool {
 	return strings.TrimSpace(strings.ToLower(config.Value)) != "false"
 }
 
+func (s *sysConfigService) GetAgentConfig() dto.AgentConfig {
+	config := dto.AgentConfig{Enabled: true, MaxCount: 1, TokenExpireDays: 90}
+	if record := repositories.SysConfigRepository.GetByKey(sqls.DB(), constants.SysConfigAgentConfig); record != nil {
+		if err := json.Unmarshal([]byte(record.Value), &config); err == nil {
+			if config.MaxCount <= 0 {
+				config.MaxCount = 1
+			}
+			if config.TokenExpireDays <= 0 {
+				config.TokenExpireDays = 90
+			}
+			return config
+		}
+	}
+	for key, value := range map[string]string{
+		constants.SysConfigAgentPublishEnabled:  "enabled",
+		constants.SysConfigAgentMaxCount:        "maxCount",
+		constants.SysConfigAgentTokenExpireDays: "tokenExpireDays",
+		constants.SysConfigAgentMandatoryTags:   "mandatoryTags",
+	} {
+		record := repositories.SysConfigRepository.GetByKey(sqls.DB(), key)
+		if record == nil {
+			continue
+		}
+		switch value {
+		case "enabled":
+			if record.Value != "" {
+				config.Enabled = strings.TrimSpace(strings.ToLower(record.Value)) != "false"
+			}
+		case "maxCount":
+			if maxCount := cast.ToInt(record.Value); maxCount > 0 {
+				config.MaxCount = maxCount
+			}
+		case "tokenExpireDays":
+			if days := cast.ToInt(record.Value); days > 0 {
+				config.TokenExpireDays = days
+			}
+		case "mandatoryTags":
+			if strings.TrimSpace(record.Value) != "" {
+				_ = json.Unmarshal([]byte(record.Value), &config.MandatoryTags)
+			}
+		}
+	}
+	return config
+}
+
 // GetAntiAbuseConfigTx reads through the active write transaction. This avoids
 // a second SQLite connection attempting to load a just-invalidated cached
 // setting while content publishing holds the transaction open.
@@ -384,7 +439,11 @@ func (s *sysConfigService) GetSiteNavs() []dto.ActionLink {
 }
 
 func (s *sysConfigService) GetModules() dto.ModulesConfig {
-	return parseModulesConfig(cache.SysConfigCache.GetStr(constants.SysConfigModules))
+	record := repositories.SysConfigRepository.GetByKey(sqls.DB(), constants.SysConfigModules)
+	if record == nil {
+		return parseModulesConfig("")
+	}
+	return parseModulesConfig(record.Value)
 }
 
 func defaultModulesConfig() dto.ModulesConfig {

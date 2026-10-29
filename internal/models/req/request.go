@@ -26,6 +26,9 @@ type CreateTopicReq struct {
 	AttachmentIds []string              `json:"attachmentIds" form:"attachmentIds"` // 附件 ID 列表（UUID），发帖时绑定到帖子
 	UserAgent     string                `json:"userAgent" form:"userAgent"`
 	Ip            string                `json:"ip" form:"ip"`
+	AgentId       int64                 `json:"agentId" form:"agentId"`
+	ActorType     string                `json:"actorType" form:"actorType"`
+	CreatedVia    string                `json:"createdVia" form:"createdVia"`
 
 	CaptchaId       string `json:"captchaId" form:"captchaId"`
 	CaptchaCode     string `json:"captchaCode" form:"captchaCode"`
@@ -69,6 +72,9 @@ type CreateArticleReq struct {
 	SourceUrl     string                `json:"sourceUrl" form:"sourceUrl"`
 	Ip            string                `json:"ip" form:"ip"`
 	AllowComments bool                  `json:"allowComments" form:"allowComments"`
+	AgentId       int64                 `json:"agentId" form:"agentId"`
+	ActorType     string                `json:"actorType" form:"actorType"`
+	CreatedVia    string                `json:"createdVia" form:"createdVia"`
 }
 
 type ImageDTO struct {
@@ -245,6 +251,9 @@ type CreateCommentReq struct {
 	QuoteId    int64  `json:"quoteId" form:"quoteId"`
 	UserAgent  string `json:"userAgent" form:"userAgent"`
 	Ip         string `json:"ip" form:"ip"`
+	AgentId    int64  `json:"agentId" form:"agentId"`
+	ActorType  string `json:"actorType" form:"actorType"`
+	CreatedVia string `json:"createdVia" form:"createdVia"`
 }
 
 func (r CreateCommentReq) DecodedEntityId() int64 {
@@ -306,4 +315,10 @@ func SplitCommaStrings(value string) []string {
 
 func SplitCommaInt64s(value string) []int64 {
 	return params.StrSplitToInt64Arr(value)
+}
+
+type AgentPublishContext struct {
+	ActorType  string `json:"actorType" form:"actorType"`
+	AgentId    int64  `json:"agentId" form:"agentId"`
+	CreatedVia string `json:"createdVia" form:"createdVia"`
 }

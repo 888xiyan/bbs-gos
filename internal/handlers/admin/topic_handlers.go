@@ -88,6 +88,7 @@ func TopicList(ctx *gin.Context) {
 		builder.Put("id", topic.Id) // Admin 端保持使用明文 ID，避免后台管理接口参数不兼容
 		builder.Put("idEncode", idcodec.Encode(topic.Id))
 		builder.Put("status", topic.Status)
+		builder.Put("actor", render.BuildTopicActor(&topic))
 		if vote := services.VoteService.Get(topic.VoteId); vote != nil {
 			builder.Put("vote", render.BuildVote(ctx, vote))
 		}

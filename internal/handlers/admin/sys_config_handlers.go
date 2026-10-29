@@ -81,6 +81,7 @@ func SysConfigConfigs(ctx *gin.Context) {
 		ScriptInjections:           services.SysConfigService.GetScriptInjections(),
 		InviteCodeConfig:           services.SysConfigService.GetInviteCodeConfig(),
 		CommentsEnabled:            services.SysConfigService.IsCommentsEnabled(),
+		AgentConfig:                services.SysConfigService.GetAgentConfig(),
 	}
 	if strs.IsBlank(resp.SiteLogo) {
 		resp.SiteLogo = "/res/images/logo.png"

@@ -48,10 +48,29 @@ func (s *topicPublishService) Publish(userId int64, form req.CreateTopicReq) (*m
 		HideContent:     form.HideContent,
 		Status:          constants.StatusOk,
 		UserAgent:       form.UserAgent,
+		ActorType:       constants.ActorTypeUser,
+		CreatedVia:      constants.CreatedViaWeb,
 		Ip:              form.Ip,
 		IpLocation:      iplocator.IpLocation(form.Ip),
 		LastCommentTime: now,
 		CreateTime:      now,
+	}
+
+	if form.AgentId > 0 {
+		form.Tags = s.mergeAgentMandatoryTags(form.Tags)
+	}
+
+	if form.AgentId > 0 {
+		agent := repositories.AgentRepository.Get(sqls.DB(), form.AgentId)
+		if agent == nil || agent.Status != constants.AgentStatusActive {
+			return nil, errors.New("agent is not active")
+		}
+		if agent.OwnerUserId != userId {
+			return nil, errors.New("agent owner mismatch")
+		}
+		topic.AgentId = agent.Id
+		topic.ActorType = constants.ActorTypeAgent
+		topic.CreatedVia = constants.CreatedViaAgent
 	}
 
 	if form.Type == constants.TopicTypeQA && form.BountyScore > 0 {
@@ -149,6 +168,28 @@ func (s *topicPublishService) Publish(userId int64, form req.CreateTopicReq) (*m
 		CreateTime: topic.CreateTime,
 	})
 	return topic, nil
+}
+
+func (s *topicPublishService) mergeAgentMandatoryTags(tags []string) []string {
+	mandatoryTags := SysConfigService.GetAgentConfig().MandatoryTags
+	if len(mandatoryTags) == 0 {
+		return tags
+	}
+	existing := make(map[string]struct{}, len(tags))
+	for _, name := range tags {
+		existing[strings.ToLower(strings.TrimSpace(name))] = struct{}{}
+	}
+	var tagIds []int64
+	for _, id := range mandatoryTags {
+		tagIds = append(tagIds, id)
+	}
+	for _, tag := range repositories.TagRepository.Find(sqls.DB(), sqls.NewCnd().In("id", tagIds)) {
+		name := strings.ToLower(strings.TrimSpace(tag.Name))
+		if _, exists := existing[name]; !exists {
+			tags = append(tags, tag.Name)
+		}
+	}
+	return tags
 }
 
 // IsNeedReview 是否需要审核

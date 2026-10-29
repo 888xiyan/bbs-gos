@@ -13,11 +13,32 @@ import (
 var validate = validator.New()
 
 const (
-	current_user_key = "__current_user"
+	current_user_key  = "__current_user"
+	current_actor_key = "__current_actor"
 )
 
 func SetCurrentUser(ctx *gin.Context, user *models.User) {
 	ctx.Set(current_user_key, user)
+	ctx.Set(current_actor_key, models.NewUserActor(user))
+}
+
+func SetCurrentActor(ctx *gin.Context, actor *models.ActorContext) {
+	if actor == nil {
+		return
+	}
+	ctx.Set(current_actor_key, actor)
+	if actor.User != nil {
+		ctx.Set(current_user_key, actor.User)
+	}
+}
+
+func GetCurrentActor(ctx *gin.Context) *models.ActorContext {
+	if v, exists := ctx.Get(current_actor_key); exists {
+		if actor, ok := v.(*models.ActorContext); ok {
+			return actor
+		}
+	}
+	return models.NewUserActor(GetCurrentUser(ctx))
 }
 
 func GetCurrentUserID(ctx *gin.Context) int64 {

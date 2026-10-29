@@ -86,6 +86,13 @@ var (
 		{Method: "POST", Pattern: "/api/admin/invite-code/create", Permissions: []PermissionDefinition{PermissionInviteCodeCreate}},
 		{Method: "POST", Pattern: "/api/admin/invite-code/disable", Permissions: []PermissionDefinition{PermissionInviteCodeDisable}},
 
+		{Method: "GET", Pattern: "/api/admin/agent/*", Permissions: []PermissionDefinition{PermissionAgentAdminView}},
+		{Method: "POST", Pattern: "/api/admin/agent/list", Permissions: []PermissionDefinition{PermissionAgentAdminView}},
+		{Method: "POST", Pattern: "/api/admin/agent/disable", Permissions: []PermissionDefinition{PermissionAgentAdminDisable}},
+		{Method: "GET", Pattern: "/api/admin/agent-token/*", Permissions: []PermissionDefinition{PermissionAgentAdminView}},
+		{Method: "POST", Pattern: "/api/admin/agent-token/list", Permissions: []PermissionDefinition{PermissionAgentAdminView}},
+		{Method: "POST", Pattern: "/api/admin/agent-token/revoke", Permissions: []PermissionDefinition{PermissionAgentAdminDisable}},
+
 		{Method: "GET", Pattern: "/api/admin/badge/*", Permissions: []PermissionDefinition{PermissionBadgeView}},
 		{Method: "POST", Pattern: "/api/admin/badge/list", Permissions: []PermissionDefinition{PermissionBadgeView}},
 		{Method: "POST", Pattern: "/api/admin/badge/create", Permissions: []PermissionDefinition{PermissionBadgeCreate}},

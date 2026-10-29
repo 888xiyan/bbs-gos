@@ -12,6 +12,7 @@ var Models = []interface{}{
 
 	&User{}, &UserToken{}, &ThirdUser{}, &OIDCIdentity{}, &Tag{}, &Article{}, &ArticleTag{}, &Comment{}, &Favorite{}, &Topic{}, &Category{},
 	&InviteCode{},
+	&Agent{}, &AgentToken{},
 	&TopicTag{}, &UserLike{}, &Message{}, &SysConfig{}, &Link{},
 	&TaskConfig{}, &UserTaskEvent{}, &UserTaskLog{},
 	&Badge{}, &UserBadge{},
@@ -153,6 +154,31 @@ type UserToken struct {
 	CreateTime int64  `gorm:"not null" json:"createTime" form:"createTime"`
 }
 
+// Agent is a user-owned API publishing identity. It is not a login user.
+type Agent struct {
+	Model
+	OwnerUserId    int64  `gorm:"not null;index:idx_agent_owner_user_id" json:"ownerUserId" form:"ownerUserId"`
+	Name           string `gorm:"size:64;not null;uniqueIndex:uk_agent_owner_name" json:"name" form:"name"`
+	Description    string `gorm:"size:512" json:"description" form:"description"`
+	Status         string `gorm:"size:16;not null;default:active;index:idx_agent_status" json:"status" form:"status"`
+	LastActiveTime int64  `gorm:"not null;default:0" json:"lastActiveTime" form:"lastActiveTime"`
+	CreateTime     int64  `gorm:"not null;default:0" json:"createTime" form:"createTime"`
+	UpdateTime     int64  `gorm:"not null;default:0" json:"updateTime" form:"updateTime"`
+}
+
+// AgentToken stores only a hash of the opaque API token.
+type AgentToken struct {
+	Model
+	AgentId      int64  `gorm:"not null;index:idx_agent_token_agent_id" json:"agentId" form:"agentId"`
+	TokenHash    string `gorm:"size:255;not null;uniqueIndex:uk_agent_token_hash" json:"tokenHash" form:"tokenHash"`
+	TokenPrefix  string `gorm:"size:16;not null" json:"tokenPrefix" form:"tokenPrefix"`
+	Status       string `gorm:"size:16;not null;default:active;index:idx_agent_token_status" json:"status" form:"status"`
+	ExpiredAt    int64  `gorm:"not null;default:0" json:"expiredAt" form:"expiredAt"`
+	LastUsedTime int64  `gorm:"not null;default:0" json:"lastUsedTime" form:"lastUsedTime"`
+	RevokedTime  int64  `gorm:"not null;default:0" json:"revokedTime" form:"revokedTime"`
+	CreateTime   int64  `gorm:"not null;default:0" json:"createTime" form:"createTime"`
+}
+
 type ThirdUser struct {
 	Model
 	UserId    int64               `gorm:"not null;uniqueIndex:idx_third_user_user_id" json:"userId" form:"userId"`
@@ -224,20 +250,23 @@ type ArticleTag struct {
 // 评论
 type Comment struct {
 	Model
-	UserId       int64                 `gorm:"index:idx_comment_user_id;not null" json:"userId" form:"userId"`                     // 用户编号
-	EntityType   string                `gorm:"size:64;index:idx_comment_entity_type;not null" json:"entityType" form:"entityType"` // 被评论实体类型
-	EntityId     int64                 `gorm:"index:idx_comment_entity_id;not null" json:"entityId" form:"entityId"`               // 被评论实体编号
-	Content      string                `gorm:"type:text;not null" json:"content" form:"content"`                                   // 内容
-	ImageList    string                `json:"imageList" form:"imageList"`                                                         // 图片
-	ContentType  constants.ContentType `gorm:"type:varchar(32);not null" json:"contentType" form:"contentType"`                    // 内容类型：markdown、html
-	QuoteId      int64                 `gorm:"not null"  json:"quoteId" form:"quoteId"`                                            // 引用的评论编号
-	LikeCount    int64                 `gorm:"not null;default:0" json:"likeCount" form:"likeCount"`                               // 点赞数量
-	CommentCount int64                 `gorm:"not null;default:0" json:"commentCount" form:"commentCount"`                         // 评论数量
-	UserAgent    string                `gorm:"size:1024" json:"userAgent" form:"userAgent"`                                        // UserAgent
-	Ip           string                `gorm:"size:128" json:"ip" form:"ip"`                                                       // IP
-	IpLocation   string                `gorm:"size:64" json:"ipLocation" form:"ipLocation"`                                        // IP属地
-	Status       int                   `gorm:"type:int;index:idx_comment_status" json:"status" form:"status"`                      // 状态：0：待审核、1：审核通过、2：审核失败、3：已发布
-	CreateTime   int64                 `json:"createTime" form:"createTime"`                                                       // 创建时间
+	UserId       int64                 `gorm:"index:idx_comment_user_id;not null" json:"userId" form:"userId"`                                 // 用户编号
+	EntityType   string                `gorm:"size:64;index:idx_comment_entity_type;not null" json:"entityType" form:"entityType"`             // 被评论实体类型
+	EntityId     int64                 `gorm:"index:idx_comment_entity_id;not null" json:"entityId" form:"entityId"`                           // 被评论实体编号
+	Content      string                `gorm:"type:text;not null" json:"content" form:"content"`                                               // 内容
+	ImageList    string                `json:"imageList" form:"imageList"`                                                                     // 图片
+	ContentType  constants.ContentType `gorm:"type:varchar(32);not null" json:"contentType" form:"contentType"`                                // 内容类型：markdown、html
+	QuoteId      int64                 `gorm:"not null"  json:"quoteId" form:"quoteId"`                                                        // 引用的评论编号
+	LikeCount    int64                 `gorm:"not null;default:0" json:"likeCount" form:"likeCount"`                                           // 点赞数量
+	CommentCount int64                 `gorm:"not null;default:0" json:"commentCount" form:"commentCount"`                                     // 评论数量
+	UserAgent    string                `gorm:"size:1024" json:"userAgent" form:"userAgent"`                                                    // UserAgent
+	Ip           string                `gorm:"size:128" json:"ip" form:"ip"`                                                                   // IP
+	IpLocation   string                `gorm:"size:64" json:"ipLocation" form:"ipLocation"`                                                    // IP属地
+	ActorType    string                `gorm:"size:16;not null;default:user;index:idx_comment_actor_type" json:"actorType" form:"actorType"`   // user/agent
+	AgentId      int64                 `gorm:"not null;default:0;index:idx_comment_agent_id" json:"agentId" form:"agentId"`                    // 发布身份
+	CreatedVia   string                `gorm:"size:16;not null;default:web;index:idx_comment_created_via" json:"createdVia" form:"createdVia"` // web/api/agent
+	Status       int                   `gorm:"type:int;index:idx_comment_status" json:"status" form:"status"`                                  // 状态：0：待审核、1：审核通过、2：审核失败、3：已发布
+	CreateTime   int64                 `json:"createTime" form:"createTime"`                                                                   // 创建时间
 }
 
 // 收藏
@@ -292,6 +321,9 @@ type Topic struct {
 	LastCommentTime   int64                 `gorm:"index:idx_topic_last_comment_time" json:"lastCommentTime" form:"lastCommentTime"`                                                           // 最后回复时间
 	LastCommentUserId int64                 `json:"lastCommentUserId" form:"lastCommentUserId"`                                                                                                // 最后回复用户
 	UserAgent         string                `gorm:"size:1024" json:"userAgent" form:"userAgent"`                                                                                               // UserAgent
+	ActorType         string                `gorm:"size:16;not null;default:user;index:idx_topic_actor_type" json:"actorType" form:"actorType"`                                                // user/agent
+	AgentId           int64                 `gorm:"not null;default:0;index:idx_topic_agent_id" json:"agentId" form:"agentId"`                                                                 // 发布身份
+	CreatedVia        string                `gorm:"size:16;not null;default:web;index:idx_topic_created_via" json:"createdVia" form:"createdVia"`                                              // web/api/agent
 	Ip                string                `gorm:"size:128" json:"ip" form:"ip"`                                                                                                              // IP
 	IpLocation        string                `gorm:"size:64" json:"ipLocation" form:"ipLocation"`                                                                                               // IP属地
 	CreateTime        int64                 `gorm:"index:idx_topic_create_time" json:"createTime" form:"createTime"`                                                                           // 创建时间

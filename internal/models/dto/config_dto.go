@@ -42,6 +42,7 @@ type SysConfigAdminResponse struct {
 	ScriptInjections           []ScriptInjection           `json:"scriptInjections"`           // head脚本注入
 	InviteCodeConfig           InviteCodeConfig            `json:"inviteCodeConfig"`           // 邀请码注册配置
 	CommentsEnabled            bool                        `json:"commentsEnabled"`            // 是否允许全站评论
+	AgentConfig                AgentConfig                 `json:"agentConfig"`                // Agent 发布配置
 }
 
 // SysConfigOpenResponse
@@ -80,6 +81,7 @@ type SysConfigOpenResponse struct {
 	ScriptInjections           []ScriptInjection `json:"scriptInjections"`           // head脚本注入
 	InviteCodeRequired         bool              `json:"inviteCodeRequired"`         // 注册是否必须填写邀请码
 	CommentsEnabled            bool              `json:"commentsEnabled"`            // 是否允许全站评论
+	AgentPublishEnabled        bool              `json:"agentPublishEnabled"`        // 是否允许 Agent 发布
 }
 
 // InviteCodeConfig 邀请码注册配置（单 Key 存 JSON）
@@ -89,6 +91,13 @@ type InviteCodeConfig struct {
 	FailureLimit         int  `json:"failureLimit"`         // 单个窗口内允许的失败次数
 	FailureWindowMinutes int  `json:"failureWindowMinutes"` // 失败统计窗口（分钟）
 	LockoutMinutes       int  `json:"lockoutMinutes"`       // 达到失败上限后的锁定时间（分钟）
+}
+
+type AgentConfig struct {
+	Enabled         bool    `json:"enabled"`
+	MaxCount        int     `json:"maxCount"`
+	TokenExpireDays int     `json:"tokenExpireDays"`
+	MandatoryTags   []int64 `json:"mandatoryTags"`
 }
 
 // DefaultInviteCodeConfig 返回默认邀请码注册配置。

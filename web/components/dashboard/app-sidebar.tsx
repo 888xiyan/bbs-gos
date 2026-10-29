@@ -155,6 +155,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             permission: PERMISSIONS.INVITE_CODE_VIEW,
           },
           {
+            title: t("dashboard.nav.agents"),
+            url: "/dashboard/agents",
+            permission: PERMISSIONS.AGENT_ADMIN_VIEW,
+          },
+          {
+            title: t("dashboard.nav.agentTokens"),
+            url: "/dashboard/agent-tokens",
+            permission: PERMISSIONS.AGENT_ADMIN_VIEW,
+          },
+          {
             title: t("dashboard.nav.roles"),
             url: "/dashboard/roles",
             permission: PERMISSIONS.DASHBOARD_ROLE_VIEW,

@@ -121,6 +121,7 @@ func _buildTopic(topic *models.Topic, buildContent bool) *resp.TopicResponse {
 	rsp.BountyScore = topic.BountyScore
 	rsp.Title = topic.Title
 	rsp.User = BuildUserInfoDefaultIfNull(topic.UserId)
+	rsp.Actor = BuildTopicActor(topic)
 	rsp.LastCommentTime = topic.LastCommentTime
 	rsp.CreateTime = topic.CreateTime
 	rsp.ViewCount = topic.ViewCount

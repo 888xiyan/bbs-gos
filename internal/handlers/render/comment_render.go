@@ -56,6 +56,7 @@ func doBuildComment(comment *models.Comment, currentUser *models.User, isBuildRe
 	ret := &resp.CommentResponse{
 		Id:           comment.Id,
 		User:         BuildUserInfoDefaultIfNull(comment.UserId),
+		Actor:        BuildCommentActor(comment),
 		EntityType:   comment.EntityType,
 		EntityId:     comment.EntityId,
 		QuoteId:      comment.QuoteId,

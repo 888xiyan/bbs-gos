@@ -42,7 +42,7 @@ func newRouter() *gin.Engine {
 		AllowOrigins:     conf.AllowedOrigins,
 		AllowCredentials: true,
 		MaxAge:           600,
-		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodOptions, http.MethodHead, http.MethodDelete, http.MethodPut},
+		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodOptions, http.MethodHead, http.MethodDelete, http.MethodPut, http.MethodPatch},
 		AllowHeaders:     []string{"*"},
 	}
 	if len(corsConfig.AllowOrigins) == 0 {
@@ -112,6 +112,18 @@ func registerAPIRoutes(group *gin.RouterGroup) {
 	topicGroup.POST("/sticky/:id", apiHandlers.TopicSticky)
 	topicGroup.GET("/hide_content", apiHandlers.TopicHideContent)
 	topicGroup.GET("/:id", apiHandlers.TopicDetail)
+
+	agentGroup := group.Group("/agents")
+	agentGroup.GET("/context", apiHandlers.AgentContextHandler)
+	agentGroup.POST("", apiHandlers.AgentsCreateHandler)
+	agentGroup.GET("", apiHandlers.AgentsListHandler)
+	agentGroup.GET("/:id", apiHandlers.AgentDetailRoute)
+	agentGroup.PATCH("/:id", apiHandlers.AgentsUpdateHandler)
+	agentGroup.DELETE("/:id", apiHandlers.AgentsDeleteHandler)
+	agentGroup.GET("/:id/tokens", apiHandlers.AgentTokensListHandler)
+	agentGroup.POST("/:id/tokens", apiHandlers.AgentTokensIssueHandler)
+	agentGroup.POST("/:id/tokens/:tokenId/revoke", apiHandlers.AgentTokensRevokeHandler)
+	agentGroup.GET("/:id/tokens/:tokenId", apiHandlers.AgentTokensListHandler)
 
 	articleGroup := group.Group("/article")
 	articleGroup.POST("/create", apiHandlers.ArticleCreate)
@@ -371,6 +383,15 @@ func registerAdminRoutes(group *gin.RouterGroup) {
 	inviteCodeGroup.POST("/create", adminHandlers.InviteCodeCreate)
 	inviteCodeGroup.POST("/disable", adminHandlers.InviteCodeDisable)
 	inviteCodeGroup.GET("/:id", adminHandlers.InviteCodeDetail)
+
+	agentAdminGroup := group.Group("/agent")
+	agentAdminGroup.POST("/list", adminHandlers.AgentAdminList)
+	agentAdminGroup.GET("/:id", adminHandlers.AgentAdminDetail)
+	agentAdminGroup.POST("/disable", adminHandlers.AgentAdminDisable)
+
+	agentTokenAdminGroup := group.Group("/agent-token")
+	agentTokenAdminGroup.POST("/list", adminHandlers.AgentTokenAdminList)
+	agentTokenAdminGroup.POST("/revoke", adminHandlers.AgentTokenAdminRevoke)
 
 	userScoreLogGroup := group.Group("/user-score-log")
 	userScoreLogGroup.POST("/list", adminHandlers.UserScoreLogList)

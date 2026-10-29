@@ -150,7 +150,19 @@ func (s *commentService) Publish(userId int64, form req.CreateCommentReq) (*mode
 		UserAgent:   form.UserAgent,
 		Ip:          form.Ip,
 		IpLocation:  iplocator.IpLocation(form.Ip),
+		ActorType:   constants.ActorTypeUser,
+		CreatedVia:  constants.CreatedViaWeb,
 		CreateTime:  dates.NowTimestamp(),
+	}
+
+	if form.AgentId > 0 {
+		agent := repositories.AgentRepository.Get(sqls.DB(), form.AgentId)
+		if agent == nil || agent.Status != constants.AgentStatusActive || agent.OwnerUserId != userId {
+			return nil, errors.New("agent is not active")
+		}
+		comment.AgentId = agent.Id
+		comment.ActorType = constants.ActorTypeAgent
+		comment.CreatedVia = constants.CreatedViaAgent
 	}
 
 	imageList := form.ParsedImageList()

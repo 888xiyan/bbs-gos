@@ -639,6 +639,7 @@ export default function DashboardSettingsRoute() {
                   antiAbuseConfig: settings.antiAbuseConfig,
                   inviteCodeConfig: settings.inviteCodeConfig,
                   commentsEnabled: settings.commentsEnabled,
+                  agentConfig: settings.agentConfig,
                 })
               }
             />
@@ -1583,6 +1584,7 @@ function SpamSettings({ settings, saving, s, update, onSave }: SettingsProps) {
   const userRateLimit = getObject(antiAbuse.user)
   const ipRateLimit = getObject(antiAbuse.ip)
   const inviteCodeConfig = getObject(settings.inviteCodeConfig)
+  const agentConfig = getObject(settings.agentConfig)
 
   return (
     <SettingsForm
@@ -1622,6 +1624,49 @@ function SpamSettings({ settings, saving, s, update, onSave }: SettingsProps) {
           onChange={(checked) => update("commentsEnabled", checked)}
         />
       </Field>
+      <SectionTitle>{s("spam.agentTitle")}</SectionTitle>
+      <Field label={s("spam.agentEnabled")}>
+        <SwitchWithTooltip
+          checked={Boolean(agentConfig.enabled)}
+          tooltip={s("spam.agentEnabledTooltip")}
+          onChange={(checked) => update("agentConfig.enabled", checked)}
+        />
+      </Field>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label={s("spam.agentMaxCount")}>
+          <TooltipNumberInput
+            value={getNumber(agentConfig.maxCount) || 1}
+            min={1}
+            max={20}
+            tooltip={s("spam.agentMaxCountTooltip")}
+            onChange={(value) => update("agentConfig.maxCount", value)}
+          />
+        </Field>
+        <Field label={s("spam.agentTokenExpireDays")}>
+          <TooltipNumberInput
+            value={getNumber(agentConfig.tokenExpireDays) || 90}
+            min={1}
+            max={365}
+            tooltip={s("spam.agentTokenExpireDaysTooltip")}
+            onChange={(value) => update("agentConfig.tokenExpireDays", value)}
+          />
+        </Field>
+        <Field label={s("spam.agentMandatoryTags")} wide>
+          <Input
+            value={getStringArray(agentConfig.mandatoryTags).join(",")}
+            placeholder="12, 100"
+            onChange={(event) =>
+              update(
+                "agentConfig.mandatoryTags",
+                event.target.value
+                  .split(",")
+                  .map((value) => Number(value.trim()))
+                  .filter((value) => Number.isInteger(value) && value > 0)
+              )
+            }
+          />
+        </Field>
+      </div>
       <SectionTitle>{s("spam.inviteCodeTitle")}</SectionTitle>
       <Field label={s("spam.inviteCodeEnabled")}>
         <SwitchWithTooltip

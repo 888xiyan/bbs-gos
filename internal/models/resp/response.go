@@ -96,9 +96,18 @@ type TagResponse struct {
 	Description string `json:"description"`
 }
 
+type ActorResponse struct {
+	Type        string    `json:"type"`
+	AgentId     int64     `json:"agentId,omitempty"`
+	AgentName   string    `json:"agentName,omitempty"`
+	OwnerUserId int64     `json:"ownerUserId,omitempty"`
+	Owner       *UserInfo `json:"owner,omitempty"`
+}
+
 type ArticleSimpleResponse struct {
 	Id            int64             `json:"id"`
 	User          *UserInfo         `json:"user"`
+	Actor         *ActorResponse    `json:"actor,omitempty"`
 	Category      *CategoryResponse `json:"category"`
 	Tags          *[]TagResponse    `json:"tags"`
 	Title         string            `json:"title"`
@@ -192,6 +201,7 @@ type TopicResponse struct {
 	SolvedAt          int64                `json:"solvedAt"`
 	BountyScore       int                  `json:"bountyScore"`
 	User              *UserInfo            `json:"user"`
+	Actor             *ActorResponse       `json:"actor,omitempty"`
 	Category          *CategoryResponse    `json:"category"`
 	Tags              *[]TagResponse       `json:"tags"`
 	Title             string               `json:"title"`
@@ -253,6 +263,7 @@ type VoteOptionResponse struct {
 type CommentResponse struct {
 	Id           int64                 `json:"id"`
 	User         *UserInfo             `json:"user"`
+	Actor        *ActorResponse        `json:"actor,omitempty"`
 	EntityType   string                `json:"entityType"`
 	EntityId     int64                 `json:"entityId"`
 	ContentType  constants.ContentType `json:"contentType"`

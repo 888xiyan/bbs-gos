@@ -10,6 +10,7 @@ import {
 import {
   Bell,
   BellRing,
+  Bot,
   ChevronDown,
   CircleHelp,
   FileText,
@@ -324,6 +325,12 @@ function UserMenu({
             <Link href="/tasks" className="flex cursor-pointer items-center">
               <ListChecks className="mr-2 h-4 w-4" />
               {t("common.header.tasks")}
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/agents" className="flex cursor-pointer items-center">
+              <Bot className="mr-2 h-4 w-4" />
+              {t("common.header.agents")}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>

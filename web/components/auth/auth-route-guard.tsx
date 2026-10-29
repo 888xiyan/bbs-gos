@@ -28,6 +28,7 @@ function isPublicRoute(pathname: string) {
   if (
     path === "/dashboard" ||
     path.startsWith("/dashboard/") ||
+    path === "/agents" ||
     path === "/tasks" ||
     path === "/topic/create" ||
     path.startsWith("/topic/edit/") ||

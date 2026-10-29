@@ -5,6 +5,7 @@ import "strings"
 const (
 	TypeDashboard  = "dashboard"
 	TypeInviteCode = "invite_code"
+	TypeAgent      = "agent"
 )
 
 const (
@@ -104,6 +105,12 @@ var (
 	PermissionInviteCodeCreate  = PermissionDefinition{Type: TypeInviteCode, Code: "invite_code.create", GroupName: GroupSystem, SortNo: 1150, NameEn: "Create Invite Codes", NameZh: "生成邀请码"}
 	PermissionInviteCodeDisable = PermissionDefinition{Type: TypeInviteCode, Code: "invite_code.disable", GroupName: GroupSystem, SortNo: 1160, NameEn: "Disable Invite Codes", NameZh: "禁用邀请码"}
 
+	PermissionAgentCreate       = PermissionDefinition{Type: TypeAgent, Code: "agent.create", GroupName: GroupSystem, SortNo: 1170, NameEn: "Create Agents", NameZh: "创建 Agent"}
+	PermissionAgentManage       = PermissionDefinition{Type: TypeAgent, Code: "agent.manage", GroupName: GroupSystem, SortNo: 1180, NameEn: "Manage Agents", NameZh: "管理 Agent"}
+	PermissionAgentAdminView    = PermissionDefinition{Type: TypeAgent, Code: "agent.admin.view", GroupName: GroupSystem, SortNo: 1190, NameEn: "View Agents", NameZh: "查看 Agent"}
+	PermissionAgentAdminDisable = PermissionDefinition{Type: TypeAgent, Code: "agent.admin.disable", GroupName: GroupSystem, SortNo: 1195, NameEn: "Disable Agents", NameZh: "停用 Agent"}
+	PermissionAgentContentView  = PermissionDefinition{Type: TypeAgent, Code: "agent.content.view", GroupName: GroupSystem, SortNo: 1198, NameEn: "View Agent Content", NameZh: "查看 Agent 内容"}
+
 	PermissionRoleView             = PermissionDefinition{Type: TypeDashboard, Code: "dashboard.role.view", GroupName: GroupSystem, SortNo: 1200, NameEn: "View Roles", NameZh: "查看角色"}
 	PermissionRoleCreate           = PermissionDefinition{Type: TypeDashboard, Code: "dashboard.role.create", GroupName: GroupSystem, SortNo: 1210, NameEn: "Create Roles", NameZh: "创建角色"}
 	PermissionRoleUpdate           = PermissionDefinition{Type: TypeDashboard, Code: "dashboard.role.update", GroupName: GroupSystem, SortNo: 1220, NameEn: "Update Roles", NameZh: "编辑角色"}
@@ -178,6 +185,11 @@ var Permissions = []PermissionDefinition{
 	PermissionInviteCodeView,
 	PermissionInviteCodeCreate,
 	PermissionInviteCodeDisable,
+	PermissionAgentCreate,
+	PermissionAgentManage,
+	PermissionAgentAdminView,
+	PermissionAgentAdminDisable,
+	PermissionAgentContentView,
 	PermissionEmailLogView,
 	PermissionUserTaskLogView,
 	PermissionUserExpLogView,
