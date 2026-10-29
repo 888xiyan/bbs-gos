@@ -1,0 +1,37 @@
+name: Local Agent MCP
+
+on:
+  push:
+    paths:
+      - "local-agent-mcp/**"
+      - ".github/workflows/local-agent-mcp.yml"
+  pull_request:
+    paths:
+      - "local-agent-mcp/**"
+      - ".github/workflows/local-agent-mcp.yml"
+
+jobs:
+  test:
+    name: ${{ matrix.os }} Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ["3.11", "3.12", "3.13"]
+    defaults:
+      run:
+        working-directory: local-agent-mcp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --all-extras
+      - run: uv run ruff check .
+      - run: uv run mypy src
+      - run: uv run pytest -q
+      - run: uv build
