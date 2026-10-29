@@ -1,3 +1,5 @@
+import os
+
 from bbs_go_mcp.credential_store import CredentialStore
 
 
@@ -11,7 +13,7 @@ def test_encrypted_file_store_round_trip_without_plaintext(tmp_path):
     loaded = store.load()
     assert loaded is not None
     assert loaded.cookie == "secret-cookie"
-    if store.credentials_path.stat().st_mode & 0o777 != 0o600:
+    if os.name != "nt" and store.credentials_path.stat().st_mode & 0o777 != 0o600:
         raise AssertionError("credential file permissions are too broad")
     store.delete()
     assert store.load() is None
