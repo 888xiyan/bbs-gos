@@ -2,27 +2,38 @@
 
 # bbs-go
 
-A lightweight community and Q&A platform for forums, knowledge bases, and discussions.
+`bbs-go` is a lightweight community and Q&A platform for forums, knowledge bases, and discussions. It combines a Go backend with a React web frontend and provides articles, topics, comments, user relationships, content governance, permissions, and search.
 
-It combines discussions, Q&A workflows, articles, comments, notifications, moderation, roles, an admin dashboard, and optional engagement mechanics such as tasks, points, levels, and badges. Use it when chat is too noisy, static docs are not interactive enough, or heavyweight forum suites feel like too much for your team.
+## Project Links
 
-## Official Links
+- GitHub: <https://github.com/mlogclub/bbs-go>
+- Gitee: <https://gitee.com/mlogclub/bbs-go>
 
-- Website: [https://bbs-go.com](https://bbs-go.com)
-- Live demo: [https://bbs.bbs-go.com](https://bbs.bbs-go.com)
-- GitHub: [https://github.com/mlogclub/bbs-go](https://github.com/mlogclub/bbs-go)
-- GitHub Discussions: [https://github.com/mlogclub/bbs-go/discussions](https://github.com/mlogclub/bbs-go/discussions)
-- Docker Hub: [https://hub.docker.com/r/mlogclub/bbs-go](https://hub.docker.com/r/mlogclub/bbs-go)
+## Feature Overview
 
-## Demo
+![bbs-go feature overview](docs/images/features_en.svg)
 
-- Community frontend: <https://bbs.bbs-go.com>
-- Admin dashboard: <https://bbs.bbs-go.com/dashboard>
-- Admin demo access: contact <g330721072@gmail.com>
+### Member Experience
+
+- Registration, login, profiles, and personal homepages
+- Follow relationships, notifications, and interaction reminders
+- Points, experience, levels, tasks, and badges
+
+### Content
+
+- Publish and edit topics, feeds, and articles
+- Comments, replies, likes, and favorites
+- Tags, categories, voting, and hidden content
+- Built-in search
+
+### Administration
+
+- Manage users, topics, comments, and articles
+- Reports, keyword filters, and content moderation
+- Roles, permissions, menus, and system settings
+- Operation logs and audit trails
 
 ## Quick Start with Docker Compose
-
-bbs-go provides an official Docker image and Docker Compose deployments with built-in MySQL or PostgreSQL support.
 
 MySQL:
 
@@ -44,166 +55,45 @@ Then open:
 - Admin dashboard: <http://localhost:3000/dashboard>
 - Install wizard: <http://localhost:3000/install>
 
-For production deployment options, environment variables, upgrades, and troubleshooting, see the Docker Hub page:
+## Build and Deploy
 
-<https://hub.docker.com/r/mlogclub/bbs-go>
-
-## CI/CD and Automated Deployment
-
-This project uses **GitHub Actions + GHCR (GitHub Container Registry) + Docker Hub** for automated build and deployment, avoiding local compilation on low-spec servers (a 2-core/4G box often runs out of resources during `docker build`).
-
-### Pipeline Overview
-
-| Stage | Description |
-|-------|-------------|
-| Trigger | Pushing code to `master` or a `v*` version tag triggers the build |
-| Build location | GitHub Actions cloud (ubuntu-latest), reusing the multi-stage `Dockerfile` at repo root |
-| Artifact | Pushed to both GHCR and Docker Hub; version tag `v4.4.5` produces `v4.4.5`, `4.4.5`, and `latest` |
-| Server deploy | No build on server; just `docker compose pull && up` |
-
-### Push and auto-build
+GitHub Actions builds container images and pushes them to GHCR and Docker Hub. Server deployments can use `deploy/remote-deploy.sh` or Docker Compose directly.
 
 ```bash
 git push origin master
 ```
 
-Watch the Actions tab for build progress. A green checkmark means the image is on both GHCR and Docker Hub.
-
-### Deploy on the server (manual trigger, controllable and rollback-able)
+Server deployment:
 
 ```bash
-# On the server (first deploy or every release)
 bash /opt/bbs-go/repo/deploy/remote-deploy.sh
 ```
 
-The script runs: pull image → validate compose → recreate container → health check (up to 90s), printing container logs on failure. The server compose file is `/opt/bbs-go/docker-compose.yml` (image points to `ghcr.io/<owner>/bbs-go:latest`).
+The deployment script pulls the image, validates the Compose file, recreates the container, and runs a health check.
 
-### Rollback
+## Development and Tests
+
+Backend tests:
 
 ```bash
-# On the server: pull a previous image tag and recreate
-docker pull ghcr.io/<owner>/bbs-go:sha-<previous-good-commit>
-docker compose -f /opt/bbs-go/docker-compose.yml up -d --no-deps
+go test ./...
 ```
 
-## Why Choose bbs-go
+Frontend checks:
 
-- **Community knowledge ready**: Give members one searchable place for discussions, questions, answers, articles, announcements, and reusable knowledge.
-- **Deploy in minutes**: Use the official Docker image and Docker Compose setup for a simple self-hosted deployment.
-- **Lightweight but complete**: Cover discussions, Q&A, articles, profiles, search, and admin workflows without a heavy enterprise stack.
-- **Community engagement included**: Tasks, points, EXP, levels, rankings, and badges help communities create repeat engagement loops when needed.
-- **Operations ready**: Manage users, content, reports, keyword filters, roles, site settings, and audit logs from the dashboard.
-- **International by default**: Built-in `en-US` and `zh-CN` UI and server-message support.
+```bash
+cd web
+pnpm typecheck
+pnpm lint
+pnpm build:spa
+```
 
-## Typical Use Cases
+The local Agent MCP project is located in `local-agent-mcp/`. It is a Python stdio MCP service with article and article-comment tools.
 
-- **Public and private forums**: structured community discussions for products, interests, teams, or vertical communities.
-- **Q&A communities**: question-style topics, answers, comments, and solved/unsolved workflows.
-- **Knowledge-sharing communities**: articles plus searchable discussions, tags, and organized reusable knowledge.
-- **Product user communities**: support conversations, announcements, feedback, showcase posts, and user engagement.
-- **Internal team spaces**: private discussions and role-based knowledge sharing for small teams.
-- **Developer support hubs**: a searchable place for technical questions, guides, and best practices.
+Standalone download: [bbs-go-mcp-0.1.0.zip](local-agent-mcp/releases/bbs-go-mcp-0.1.0.zip).
 
-## Comparison with Other Platforms
+Agent setup and login guide: [AGENT_GUIDE.md](local-agent-mcp/AGENT_GUIDE.md).
 
-This comparison is based on public product positioning and common use cases. The best choice depends on your team, stack, deployment model, and community goals.
+## License
 
-| Platform | Best for | Strengths | When bbs-go may fit better |
-| -------- | -------- | --------- | -------------------------- |
-| Discord / Slack | Real-time chat communities | Fast conversations and broad adoption | You need searchable, long-lived discussions and accepted answers instead of knowledge disappearing in chat |
-| GitHub Discussions | GitHub-centered project conversations | Close to code and contributors | You want an independent community space with articles, moderation, member profiles, and engagement tools outside GitHub |
-| Discourse | Mature large communities and advanced governance workflows | Strong ecosystem, extensive moderation tools, hosted and self-hosted options | You want a lighter self-hosted platform, an all-in-one Go-based release, and built-in forum + Q&A + knowledge publishing workflows |
-| Flarum / NodeBB | Modern forum communities | Polished forum UX and extension ecosystems | You need more built-in operations tools, Q&A flows, article-style publishing, and engagement mechanics without assembling many extensions |
-| Question2Answer | Dedicated Q&A websites | Focused Q&A model, points and ranking features, simple PHP/MySQL deployment | You need Q&A plus broader forum discussions, articles, moderation, member operations, and long-term community engagement tools |
-
-## Feature Map
-
-![bbs-go feature overview](docs/images/features_en.svg)
-
-## Core Features
-
-### Member Experience
-
-- Account registration and login with multiple login methods
-- User profiles and personal homepages
-- Follow and follower relationships
-- In-app notifications and interaction reminders
-- Point records and leaderboards
-
-### Content and Engagement
-
-- Publish and edit topics, feeds, and articles
-- Comments, replies, likes, and favorites
-- Tags and nodes for content organization and discovery
-- Voting and hidden content
-- Built-in search
-
-### Growth Mechanics
-
-- Daily check-in incentives
-- Configurable task system for new-user, daily, and achievement rewards
-- Points and EXP reward mechanisms
-- Level progression configuration
-- Badge and honor system
-
-### Operations and Governance
-
-- Unified management for users, topics, comments, and articles
-- Report handling and keyword filters
-- Role-based administration and permission-aware operations
-- Site configuration and system settings
-- Operation logs and audit trails
-
-<!-- ## Screenshots
-
-![bbs-go feature overview](docs/images/features.jpg)
-
-More English screenshots and short product GIFs are planned for the overseas launch materials. -->
-
-## Roadmap
-
-### Now
-
-- Improve English docs, demo content, and GitHub onboarding
-- Improve Docker-based evaluation flow
-- Stabilize forum, Q&A, article, and dashboard workflows
-
-### Next
-
-- Better moderation and anti-spam tooling
-- Import/export utilities
-- Email notification improvements
-- More OAuth providers
-
-### Later
-
-- Plugin or extension system exploration
-- Managed hosting exploration
-- Advanced search and analytics
-- AI-assisted knowledge organization
-
-## Internationalization
-
-bbs-go includes English and Simplified Chinese language support:
-
-- `en-US`
-- `zh-CN`
-
-The admin dashboard and server-side messages are designed for English and Simplified Chinese deployments.
-
-## License and Commercial Use
-
-bbs-go is open source under the [GPLv3 License](../LICENSE).
-
-You may use, modify, and self-host bbs-go under the terms of GPLv3.
-
-If you want to embed bbs-go into a proprietary product, redistribute a modified version under a different license, or need custom commercial terms, please contact us for a commercial license.
-
-Commercial licensing, deployment support, customization, migration, and long-term maintenance are available by email: <g330721072@gmail.com>.
-
-## Community and Contact
-
-- Community questions: [GitHub Discussions](https://github.com/mlogclub/bbs-go/discussions)
-- Bugs and feature requests: [GitHub Issues](https://github.com/mlogclub/bbs-go/issues)
-- Commercial support: <g330721072@gmail.com>
-- Security reports: email <g330721072@gmail.com> with `[Security]` in the subject
+bbs-go is licensed under the [GPLv3 License](LICENSE).

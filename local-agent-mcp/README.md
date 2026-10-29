@@ -2,6 +2,8 @@
 
 `bbs-go-mcp` is a local Python MCP server for bbs-go article and article-comment workflows. It runs over stdio and stores the local `bbsgo_token` credential outside the Agent context.
 
+The installable release archive is available at [`releases/bbs-go-mcp-0.1.0.zip`](releases/bbs-go-mcp-0.1.0.zip).
+
 ## Install
 
 ```bash
