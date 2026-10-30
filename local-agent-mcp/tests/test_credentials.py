@@ -17,3 +17,24 @@ def test_encrypted_file_store_round_trip_without_plaintext(tmp_path):
         raise AssertionError("credential file permissions are too broad")
     store.delete()
     assert store.load() is None
+
+
+def test_keyring_failure_falls_back_to_encrypted_file(tmp_path, monkeypatch):
+    import keyring
+
+    monkeypatch.setattr(
+        keyring,
+        "get_password",
+        lambda *_: (_ for _ in ()).throw(RuntimeError("DBUS unavailable")),
+    )
+    monkeypatch.setattr(
+        keyring,
+        "set_password",
+        lambda *_: (_ for _ in ()).throw(RuntimeError("DBUS unavailable")),
+    )
+    store = CredentialStore(tmp_path, use_keyring=True)
+    credential = store.save("fallback-cookie")
+    assert credential.cookie == "fallback-cookie"
+    loaded = store.load()
+    assert loaded is not None
+    assert loaded.cookie == "fallback-cookie"

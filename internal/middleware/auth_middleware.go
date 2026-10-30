@@ -24,6 +24,10 @@ func AuthMiddleware(ctx *gin.Context) {
 					AgentId:       auth.Agent.Id,
 					Authenticated: true,
 				})
+			} else if services.UserTokenService.GetUserToken(ctx) != "" {
+				if user := services.UserTokenService.GetCurrent(ctx); user != nil {
+					common.SetCurrentUser(ctx, user)
+				}
 			}
 		} else if user := services.UserTokenService.GetCurrent(ctx); user != nil {
 			common.SetCurrentUser(ctx, user)

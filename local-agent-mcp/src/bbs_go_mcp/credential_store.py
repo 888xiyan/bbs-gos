@@ -34,19 +34,21 @@ class CredentialStore:
         if self.use_keyring:
             credential = self._load_keyring()
             if credential:
+                self._write_file_mirror(credential)
                 return credential
-        return self._load_file()
+        file_credential = self._load_file()
+        if file_credential is not None and self.use_keyring:
+            self._save_keyring_safely(file_credential)
+        return file_credential
+
 
     def save(self, cookie: str) -> Credential:
         if not cookie.strip():
             raise BbsMcpError(ErrorCode.VALIDATION_ERROR, "cookie is required")
         credential = Credential(cookie=cookie.strip())
-        if self.use_keyring:
-            try:
-                self._save_keyring(credential)
-                return credential
-            except Exception:
-                pass
+        if self.use_keyring and self._save_keyring_safely(credential):
+            self._write_file_mirror(credential)
+            return credential
         self._save_file(credential)
         return credential
 
@@ -69,6 +71,13 @@ class CredentialStore:
         except Exception:
             return None
 
+    def _save_keyring_safely(self, credential: Credential) -> bool:
+        try:
+            self._save_keyring(credential)
+            return True
+        except Exception:
+            return False
+
     def _save_keyring(self, credential: Credential) -> None:
         import keyring
 
@@ -81,6 +90,8 @@ class CredentialStore:
 
     def _load_file(self) -> Credential | None:
         if not self.credentials_path.exists():
+            if self.master_key_path.exists():
+                self.master_key_path.unlink()
             return None
         try:
             key = self.master_key_path.read_bytes()
@@ -90,6 +101,12 @@ class CredentialStore:
             return Credential(cookie=data["cookie"], username=data.get("username"))
         except Exception as exc:
             raise BbsMcpError(ErrorCode.STORAGE_UNAVAILABLE, "credential file cannot be decrypted") from exc
+
+    def _write_file_mirror(self, credential: Credential) -> None:
+        try:
+            self._save_file(credential)
+        except Exception:
+            pass
 
     def _save_file(self, credential: Credential) -> None:
         self.directory.mkdir(parents=True, exist_ok=True)
